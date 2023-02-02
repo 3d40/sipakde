@@ -185,3 +185,13 @@ def InputPangkatView(request, id):
         else:
             pass
     return render(request, 'pegawai/pangkatinput.html', {'form':form})
+
+
+class PegawaiDetailView(DetailView):
+    model = TPegawaiSapk
+    template_name = 'pegawai/profile.html'
+    context_object_name = 'pegawai'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return context

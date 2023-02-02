@@ -10,8 +10,7 @@ urlpatterns = [
     path('changepassword/', CustomPasswordChangeView.as_view(), name='password_change'),
     #Pegawai
     path('intaian/pegawailist', HomePageView.as_view(), name='pegawailist'),
-    # path('intaian/search/', SearchResultsView, name='searchresult'),
-    path('intaian/profile/<str:nip_baru>', PegawaiDetail, name='profile'),
+    path('intaian/profile/<str:pk>', PegawaiDetailView.as_view(), name='profile'),
 
     #Golongan
     path('intaian/pegawai/golongan/<str:nip_baru>', GolonganListView, name='rwgolongan'),

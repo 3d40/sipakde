@@ -24,7 +24,7 @@
                     <td>
                       {{forloop.counter}}
                     </td>
-                    <td class="py-1"><a href="{% url 'pegawai:profile' obj.nip_baru %}">
+                    <td class="py-1"><a href="{% url 'pegawai:profile' obj.pk %}">
                         {{obj.nip_baru}}
                       </a>
                     </td>
