@@ -18,6 +18,8 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
 from .token import account_activation_token
 from django.core.mail import EmailMessage
+from django.views.generic.edit import CreateView, UpdateView
+
 
 # Create your views here.
 # class Login(LoginView):
@@ -195,3 +197,26 @@ class PegawaiDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         return context
+
+
+class InputPangkatView(CreateView):
+    model = TRiwayatGolongan
+    fields = ['id', 'orang_id', 'nip_baru', 'kode_jenis_kp', 'jenis_kp', 'id_golongan', 'sk_nomor', 'sk_tanggal', 'nomor_bkn', 'tanggal_bkn', 'tmt_golongan', 'jumlah_angka_kredit_utama', 'jumlah_angka_kredit_tambahan', 'mk_golongan_tahun', 'mk_golongan_bulan', 'dokumen', 'berkas', 'nama']
+    success_url = reverse_lazy('pegawai:rwgolongan')
+    template_name = 'pegawai/pangkatinput.html'
+    
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        messages.success(self.request, "The task was created successfully.")
+        return super(TRiwayatGolonganCreate,self).form_valid(form)
+
+
+class PangkatEditView(UpdateView):
+    # specify the model you want to use
+    model = TRiwayatGolongan
+    template_name = 'pegawai/pangkatinput.html'
+    form_class = FormTRiwayatGolongan
+    # specify the fields
+    # fields =  ['jenis_kp','id_golongan', 'sk_nomor', 'sk_tanggal','tmt_golongan','nomor_bkn', 'tanggal_bkn', 'mk_golongan_tahun', 'mk_golongan_bulan', 'dokumen']
+    success_url = 'pegawai:rwgolongan'
+    

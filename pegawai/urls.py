@@ -1,5 +1,6 @@
 from django.urls import path
 from .views import *
+from django.conf.urls.static import static
 
 app_name = 'pegawai'
 urlpatterns = [
@@ -14,9 +15,8 @@ urlpatterns = [
 
     #Golongan
     path('intaian/pegawai/golongan/<str:nip_baru>', GolonganListView, name='rwgolongan'),
-    path('pegawai/input/pangkat/<str:id>', InputPangkatView, name='inputpangkat'),
-
-
-
+    path('pegawai/input/pangkat/<str:pk>', PangkatEditView.as_view(), name='inputpangkat'),
 
 ]
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

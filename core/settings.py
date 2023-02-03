@@ -146,3 +146,6 @@ LOGIN_REDIRECT_URL = 'pegawai:home'
 LOGIN_URL = '/'
 LOGIN_REDIRECT_URL = 'pegawai:home'
 LOGOUT_REDIRECT_URL = '/'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'static/upload')
+MEDIA_URL = '/upload/'

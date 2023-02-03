@@ -275,17 +275,17 @@ class TRiwayatGolongan(models.Model):
     orang_id = models.ForeignKey('TPegawaiSapk', blank = True, null=True, on_delete = models.CASCADE, db_column='orang_id')
     nip_baru = models.CharField(db_column='NIP', max_length=18, blank=True, null=True)  # Field name made lowercase.
     kode_jenis_kp = models.IntegerField(db_column='Kode_Jenis_KP', blank=True, null=True)  # Field name made lowercase.
-    jenis_kp = models.CharField(db_column='Jenis_KP', max_length=52, blank=True, null=True)  # Field name made lowercase.
-    id_golongan = models.ForeignKey('TKodeGolongan', max_length=32, on_delete=models.CASCADE, db_column='id_golongan')  # Field name made lowercase.
-    sk_nomor = models.CharField(db_column='SK_Nomor', max_length=45, blank=True, null=True)  # Field name made lowercase.
-    sk_tanggal = models.DateField(db_column='Sk_Tanggal', max_length=14,  null=True, default='1900-01-01', blank=True)  # Field name made lowercase.
-    nomor_bkn = models.CharField(db_column='Nomor_BKN', max_length=30,  null=True, blank=True )  # Field name made lowercase.
-    tanggal_bkn = models.DateField(db_column='Tanggal_BKN', max_length=14, null=True, default='1900-01-01')  # Field name made lowercase.
-    tmt_golongan = models.DateField(db_column='TMT_Golongan', max_length=14, blank=True, null=True)  # Field name made lowercase.
+    jenis_kp = models.CharField(db_column='Jenis_KP', max_length=52, blank=True, null=True, verbose_name="Jenis Kenaikan Pangkat")  # Field name made lowercase.
+    id_golongan = models.ForeignKey('TKodeGolongan', verbose_name ="Golongan" ,max_length=32, on_delete=models.CASCADE, db_column='id_golongan')  # Field name made lowercase.
+    sk_nomor = models.CharField(db_column='SK_Nomor', verbose_name ="Nomor SK",max_length=45, blank=True, null=True)  # Field name made lowercase.
+    sk_tanggal = models.DateField(db_column='Sk_Tanggal', verbose_name="Tanggal SK",max_length=14,  null=True, default='1900-01-01', blank=True)  # Field name made lowercase.
+    nomor_bkn = models.CharField(db_column='Nomor_BKN', verbose_name="Nomor BKN",max_length=30,  null=True, blank=True )  # Field name made lowercase.
+    tanggal_bkn = models.DateField(db_column='Tanggal_BKN', verbose_name="Tanggal BKN",max_length=14, null=True, default='1900-01-01')  # Field name made lowercase.
+    tmt_golongan = models.DateField(db_column='TMT_Golongan', verbose_name = "TMT Golongan",max_length=14, blank=True, null=True)  # Field name made lowercase.
     jumlah_angka_kredit_utama = models.DecimalField(db_column='Jumlah_Angka_Kredit_Utama', max_digits=8, decimal_places=3, blank=True, null=True)  # Field name made lowercase.
     jumlah_angka_kredit_tambahan = models.DecimalField(db_column='Jumlah_Angka_Kredit_Tambahan', max_digits=7, decimal_places=3, blank=True, null=True)  # Field name made lowercase.
-    mk_golongan_tahun = models.IntegerField(db_column='MK_Golongan_Tahun', blank=True, null=True)  # Field name made lowercase.
-    mk_golongan_bulan = models.IntegerField(db_column='MK_Golongan_Bulan', blank=True, null=True)  # Field name made lowercase.
+    mk_golongan_tahun = models.IntegerField(db_column='MK_Golongan_Tahun', verbose_name= "Masa Kerja Golongan (Tahun)", blank=True, null=True)  # Field name made lowercase.
+    mk_golongan_bulan = models.IntegerField(db_column='MK_Golongan_Bulan', verbose_name= "Masa Kerja Golongan (Bulan)", blank=True, null=True)  # Field name made lowercase.
     dokumen = models.FileField(upload_to= _upload_path_kp, null=True, validators=[FileExtensionValidator( ['pdf'] )])
     berkas = models.ForeignKey('TBerkas', on_delete=models.DO_NOTHING, blank=True, null=True)
     nama = models.CharField(db_column='Nama', max_length=255, blank=True, null=True)

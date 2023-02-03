@@ -27,6 +27,17 @@ class ProfileSearchForm(forms.Form):
     nama = forms.CharField(required=False)
 
 class FormTRiwayatGolongan(ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        super(FormTRiwayatGolongan, self).__init__(*args, **kwargs)
+        self.fields['jenis_kp'].disabled = True
+        self.fields['id_golongan'].disabled = True
+        self.fields['sk_nomor'].disabled = True
+        self.fields['sk_tanggal'].disabled = True
+        self.fields['tmt_golongan'].disabled = True
+        self.fields['mk_golongan_tahun'].disabled = True
+        self.fields['mk_golongan_bulan'].disabled = True
+
     class Meta:
         model = TRiwayatGolongan
         fields = ['jenis_kp', 'id_golongan', 'sk_nomor', 'sk_tanggal','tmt_golongan','mk_golongan_tahun', 'mk_golongan_bulan', 'dokumen']
