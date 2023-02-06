@@ -14,8 +14,13 @@ urlpatterns = [
     path('intaian/profile/<str:pk>', PegawaiDetailView.as_view(), name='profile'),
 
     #Golongan
-    path('intaian/pegawai/golongan/<str:nip_baru>', GolonganListView, name='rwgolongan'),
-    path('pegawai/input/pangkat/<str:pk>', PangkatEditView.as_view(), name='inputpangkat'),
+    path('intaian/pegawai/golongan/', GolonganListView.as_view(), name='rwgolongan'),
+    path('intaian/pegawai/input/golongan/<str:pk>', PangkatEditView.as_view(), name='editpangkat'),
+
+    #Jabatan
+    path('intaian/pegawai/jabatan/', JabatanListView.as_view() , name='rwjabatan'),
+    path('intaian/pegawai/input/jabatan/<str:pk>', JabatanEditView.as_view(), name='editjabatan'),
+
 
 ]
 if settings.DEBUG:

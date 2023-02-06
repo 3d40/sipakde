@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404, HttpResponse, redirect, get_list_or_404
+from django.shortcuts import render, get_object_or_404, HttpResponse, redirect, get_list_or_404,reverse
 from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
@@ -25,6 +25,7 @@ from django.views.generic.edit import CreateView, UpdateView
 # class Login(LoginView):
 #     template_name = 'register/login.html';
 # redirect_authenticated_user = True
+
 def LoginView(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -33,15 +34,14 @@ def LoginView(request):
         if user:
             request.session['user'] = username
             xxx = TUser.objects.get(pengguna = user)
-            print(xxx.user_akses)
             tipeuser = TJenisUser.objects.get(jenis=xxx.jenis)
-            print(tipeuser)
 
             if user.is_active and tipeuser.jenis =='Pegawai':
-                pegawai = get_object_or_404(TPegawaiSapk, nip_baru = user)
+                # print(user, xxx.jenis)
+                pegawai = TPegawaiSapk.objects.get(nip_baru = user)
                 login(request,user)
-                # return HttpResponseRedirect(reverse('pegawai:dashboard'))
                 return render(request, 'pegawai/profile.html',{'pegawai':pegawai})
+            
             elif user.is_active and tipeuser.jenis =='Operator':
                 data = get_list_or_404(TPegawaiSapk, unor_induk_bkd = xxx.user_akses)
                 login(request,user)
@@ -53,8 +53,8 @@ def LoginView(request):
                     page_obj = paginator.page(1)
                 except EmptyPage:
                     page_obj = paginator.page(paginator.num_pages)
-
                 return render(request, 'pegawai/pegawai_list.html',{'page_obj':page_obj})
+            
             elif user.is_active and tipeuser.jenis =='Verifikator':
                 data = TPegawaiSapk.objects.all()
                 login(request,user)
@@ -158,19 +158,28 @@ def PegawaiDetail(request, nip_baru):
     return render(request, 'pegawai/profile.html', {'pegawai': pegawai})
 
 
+class GolonganListView(ListView):
+    model = TRiwayatGolongan
+    # form_class = FormTRiwayatGolongan
+    template_name = 'pegawai/rwgolongan_list.html'
+    
 
-def GolonganListView(request, nip_baru):
-    pegawai = TPegawaiSapk.objects.get(nip_baru=nip_baru)
-    golongan = TRiwayatGolongan.objects.filter(nip_baru=pegawai.nip_baru).order_by('sk_tanggal')
-    template_name = 'pegawai/golongan_list.html'
-    form = FormTRiwayatGolongan()
-    context = {
-         'golongan':golongan,
-         'pegawai':pegawai,
-         'form':form,
-         'judul':'Riwayat Golongan'
-    }
-    return render(request,template_name, context)
+    def get_queryset(self, **kwargs):
+        pegawai = get_object_or_404(TPegawaiSapk, nip_baru =self.request.user)
+        qs = super().get_queryset(**kwargs)
+        return qs.filter(orang_id=pegawai.id)
+
+class JabatanListView(ListView):
+    model = TRiwayatJabatan
+    # form_class = FormTRiwayatGolongan
+    template_name = 'pegawai/rwgolongan_list.html'
+    
+
+    def get_queryset(self, **kwargs):
+        pegawai = get_object_or_404(TPegawaiSapk, nip_baru =self.request.user)
+        qs = super().get_queryset(**kwargs)
+        return qs.filter(orang_id=pegawai.id)
+
 
 def InputPangkatView(request, id):
     pengguna = request.session['user']
@@ -199,24 +208,29 @@ class PegawaiDetailView(DetailView):
         return context
 
 
-class InputPangkatView(CreateView):
-    model = TRiwayatGolongan
-    fields = ['id', 'orang_id', 'nip_baru', 'kode_jenis_kp', 'jenis_kp', 'id_golongan', 'sk_nomor', 'sk_tanggal', 'nomor_bkn', 'tanggal_bkn', 'tmt_golongan', 'jumlah_angka_kredit_utama', 'jumlah_angka_kredit_tambahan', 'mk_golongan_tahun', 'mk_golongan_bulan', 'dokumen', 'berkas', 'nama']
-    success_url = reverse_lazy('pegawai:rwgolongan')
-    template_name = 'pegawai/pangkatinput.html'
-    
-    def form_valid(self, form):
-        form.instance.user = self.request.user
-        messages.success(self.request, "The task was created successfully.")
-        return super(TRiwayatGolonganCreate,self).form_valid(form)
-
-
 class PangkatEditView(UpdateView):
-    # specify the model you want to use
-    model = TRiwayatGolongan
     template_name = 'pegawai/pangkatinput.html'
+    model = TRiwayatGolongan
     form_class = FormTRiwayatGolongan
-    # specify the fields
-    # fields =  ['jenis_kp','id_golongan', 'sk_nomor', 'sk_tanggal','tmt_golongan','nomor_bkn', 'tanggal_bkn', 'mk_golongan_tahun', 'mk_golongan_bulan', 'dokumen']
-    success_url = 'pegawai:rwgolongan'
     
+    def get_success_url(self):
+        return reverse("pegawai:rwgolongan")
+    
+
+class RiwayatJabatanList(ListView):
+    model = TRiwayatJabatan
+    template_name = 'pegawai/rwjabatan_list.html'
+
+    def get_queryset(self, **kwargs):
+        pegawai = get_object_or_404(TPegawaiSapk, nip_baru =self.request.user)
+        qs = super().get_queryset(**kwargs)
+        return qs.filter(orang_id=pegawai.id)
+
+
+class JabatanEditView(UpdateView):
+    template_name = 'pegawai/jabataninput.html'
+    model = TRiwayatJabatan
+    form_class = FormTriwayatJabatan
+    
+    def get_success_url(self):
+        return reverse("pegawai:editjabatan")

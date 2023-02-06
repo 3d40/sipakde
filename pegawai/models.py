@@ -22,7 +22,7 @@ class TJenisUser(models.Model):
         return str(self.jenis)
 
 class TPegawaiSapk(models.Model):
-    id = models.CharField(db_column='PNS_ID', primary_key=True, max_length = 32, editable=False)  # Field name made lowercase.
+    id = models.CharField(db_column='ID', primary_key=True, max_length = 32, editable=False)  # Field name made lowercase.
     nip_baru = models.CharField(db_column='NIP_BARU', max_length=18)  # Field name made lowercase.
     nip_lama = models.CharField(db_column='NIP_LAMA', max_length=9, blank=True, null=True)  # Field name made lowercase.
     nama = models.CharField(db_column='NAMA', max_length=50, blank=True, null=True)  # Field name made lowercase.
@@ -55,7 +55,7 @@ class TPegawaiSapk(models.Model):
     mk_tahun = models.IntegerField(db_column='MK_TAHUN', blank=True, null=True)  # Field name made lowercase.
     mk_bulan = models.IntegerField(db_column='MK_BULAN', blank=True, null=True)  # Field name made lowercase.
     jenis_jabatan= models.ForeignKey('TJenisJabatan',on_delete=models.DO_NOTHING, blank=True, null=True)  # Field name made lowercase.
-    jabatan = models.ForeignKey('TJabatan', on_delete=models.DO_NOTHING, null=True, db_column='JABATAN_ID')  # Field name made lowercase.
+    jabatan = models.ForeignKey('TRiwayatJabatan', on_delete=models.DO_NOTHING, null=True, blank=True)  # Field name made lowercase.
     tingkat_pendidikan= models.ForeignKey('TTingkatPendidikan', on_delete=models.DO_NOTHING, blank=True, null=True)  # Field name made lowercase.
     pendidikan= models.ForeignKey('TPendidikan', max_length=32, on_delete=models.DO_NOTHING, blank=True, null=True)  # Field name made lowercase.
     kpkn= models.CharField(db_column='KPKN_ID', max_length=32)  # Field name made lowercase.
@@ -333,3 +333,39 @@ class TUser(models.Model):
 
     def __str__(self):
         return self.pengguna.username
+
+
+def _upload_path_jabatan(instance,filename):
+    nip = instance.orang
+    print(nip)
+    return instance.get_upload_path(filename)
+
+
+class TRiwayatJabatan(models.Model):
+    id = models.CharField(db_column='ID', primary_key=True, max_length=32, editable=False)  # Field name made lowercase.
+    # nip = models.CharField(db_column='NIP', max_length=18)  # Field name made lowercase.
+    orang = models.ForeignKey('TPegawaiSapk', blank = True, null=True, on_delete = models.CASCADE, db_column='Id_Orang')  # Field name made lowercase.
+    # nama = models.CharField(db_column='Nama', max_length=40)  # Field name made lowercase.
+    unor = models.ForeignKey('TUnor', on_delete=models.CASCADE, db_column='Id_Unor')  # Field name made lowercase.
+    jenis_jabatan = models.ForeignKey('TJenisJabatan', blank=True, null=True, on_delete=models.CASCADE, db_column='Id_Jenis_Jabatan')  # Field name made lowercase.
+    id_jabatan = models.ForeignKey('TJabatan' , on_delete=models.CASCADE, db_column='id_jabatan',  verbose_name ='Nama Jabatan')  # Field name made lowercase.
+    eselon = models.ForeignKey('TEselon' , on_delete=models.CASCADE, db_column='id_eselon', verbose_name="Eselon", default=53)  # Field name made lowercase.
+    tmt_jabatan = models.DateField(db_column='TMT_JABATAN', max_length=14, default="1900-01-01", null =True, blank=True)  # Field name made lowercase.
+    nomor_sk = models.CharField(db_column='Nomor_SK', max_length=52, blank=True, null=True)  # Field name made lowercase.
+    tanggal_sk = models.DateField(db_column='Tanggal_SK', blank=True, null=True, default="1900-01-01")  # Field name made lowercase.
+    # id_satuan_kerja = models.CharField(db_column='Id_Satuan_Kerja', max_length=32, verbose_name ='Satuan Kerja')  # Field name made lowercase.
+    tmt_pelantikan = models.DateField(db_column='TMT_Pelantikan', blank=True, null=True, default="1900-01-01") # Field name made lowercase.
+    berkas = models.ForeignKey('TBerkas', on_delete=models.CASCADE, blank=True, null=True)
+    dokumen = models.FileField(upload_to=_upload_path_jabatan)
+
+    class Meta:
+        managed = True
+        db_table = 't_riwayat_jabatan'
+
+    def __str__(self):
+        return self.orang.nama
+    
+    def get_upload_path(self,filename):
+        filelama = self.orang.nip_baru, self.id_jabatan.nama_jabatan
+        filename = {"JABATAN_"},filelama
+        return "{}/{}".format(self.orang.nip_baru, filename)

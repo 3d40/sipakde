@@ -41,3 +41,9 @@ class FormTRiwayatGolongan(ModelForm):
     class Meta:
         model = TRiwayatGolongan
         fields = ['jenis_kp', 'id_golongan', 'sk_nomor', 'sk_tanggal','tmt_golongan','mk_golongan_tahun', 'mk_golongan_bulan', 'dokumen']
+
+
+class FormTriwayatJabatan(ModelForm):
+    class Meta :
+        model = TRiwayatJabatan
+        fields =('orang','unor', 'jenis_jabatan','eselon', 'tmt_jabatan', 'nomor_sk', 'tanggal_sk', 'tmt_pelantikan', 'berkas', 'dokumen', )
