@@ -15,11 +15,18 @@ urlpatterns = [
 
     #Golongan
     path('intaian/pegawai/golongan/', GolonganListView.as_view(), name='rwgolongan'),
-    path('intaian/pegawai/input/golongan/<str:pk>', PangkatEditView.as_view(), name='editpangkat'),
+    path('intaian/pegawai/update/golongan/<str:pk>', PangkatEditView.as_view(), name='editpangkat'),
 
     #Jabatan
     path('intaian/pegawai/jabatan/', JabatanListView.as_view() , name='rwjabatan'),
-    path('intaian/pegawai/input/jabatan/<str:pk>', JabatanEditView.as_view(), name='editjabatan'),
+    path('intaian/pegawai/edit/jabatan/<pk>', JabatanEditView.as_view(), name='editjabatan'),
+    path('intaian/pegawai/input/jabatan/', JabatanInputView.as_view(), name='inputjabatan'),
+
+
+    #skp
+    path('intaian/pegawai/skp/', RiwayatSkpList.as_view() , name='rwskp'),
+    path('intaian/pegawai/edit/skp/<pk>', SkpEditView.as_view(), name='editskp'),
+    path('intaian/pegawai/input/skp/', SkpInputView.as_view(), name='inputskp'),
 
 
 ]

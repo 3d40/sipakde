@@ -46,4 +46,45 @@ class FormTRiwayatGolongan(ModelForm):
 class FormTriwayatJabatan(ModelForm):
     class Meta :
         model = TRiwayatJabatan
-        fields =('orang','unor', 'jenis_jabatan','eselon', 'tmt_jabatan', 'nomor_sk', 'tanggal_sk', 'tmt_pelantikan', 'berkas', 'dokumen', )
+        fields =('orang','unor', 'jenis_jabatan','eselon', 'tmt_jabatan', 'nomor_sk', 'tanggal_sk', 'tmt_pelantikan', 'dokumen')
+
+
+class FormRiwayatSkp(ModelForm):
+    class Meta :
+        model = TRiwayatDp3
+        fields = [
+            'id_pns',
+            'tahun', 
+            'kesetiaan', 
+            'prestasi_kerja', 
+            'tanggung_jawab', 
+            'ketaatan', 
+            'kejujuran', 
+            'kerjasama', 
+            'prakarsa', 
+            'kepemimpinan', 
+            'jumlah', 
+            'nilai_ratarata', 
+            'status_pejabat_penilai', 
+            'nama_pejabat_penilai', 
+            'jabatan_pejabat_penilai', 
+            'golongan_pejabat_penilai',
+            'nama_unor_pejabat_penilai', 
+            'nama_atasan_penilai', 
+            'jabatan_atasan_penilai', 
+            'golongan_atasan_penilai',  
+            'nama_unor_atasan_penilai', 
+            'dokumen'
+            ]
+
+
+class FormTBerkas(ModelForm):
+    class Meta :
+        model = TBerkas
+        fields = [
+            'pns_id',
+            'tipe',
+            'tanggal_input',
+            'tanggal_update',
+
+        ]

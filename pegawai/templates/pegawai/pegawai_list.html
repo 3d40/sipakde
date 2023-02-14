@@ -1,6 +1,7 @@
 {% extends 'bootstrap/base.html' %}
 {% block content %}
 <form method="GET" action="{% url 'pegawai:pegawailist'%}">
+  {% csrf_token %}
   {{form.as_table}}
   <input type="submit" value="Submit" class="btn btn-primary"/>
 </form>

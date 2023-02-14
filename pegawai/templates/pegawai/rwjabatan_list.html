@@ -42,6 +42,9 @@
                         TMT Jabatan
                       </th>
                       <th>
+                        Status Berkas
+                      </th>
+                      <th>
                         Arsip
                       </th>
                     </tr>
@@ -53,7 +56,7 @@
                         {{forloop.counter}}
                       </td>
                       <td>
-                        <a href="{% url 'pegawai:editjabatan' data.id %}">{{data.id_jabatan}}</a> 
+                        <a href="{% url 'pegawai:editjabatan' data.id %}">{{data.jabatan.nama_jabatan}}</a> 
                       </td>
                       <td>
                         {{data.jenis_jabatan}}
@@ -65,11 +68,13 @@
                         {{data.tmt_jabatan}}
                       </td>
                       <td>
+                        {{data.status}}
+                      </td>
+                      <td>
                         {% if data.dokumen %}
                         <a href="{{data.dokumen.url}}">Lihat Arsip</a>
                         {% else %}
                         data belum data
-                        The above exception (no such column: t_pegawai_sapk.ID) was the direct cause of the following exception:
                         {% endif %}
                       </td>
                     </tr>
@@ -81,7 +86,7 @@
           </div>
         </div>
     <!-- content-wrapper ends -->
-    <!-- partial:../../partials/_footer.html --
+    <!-- partial:../../partials/_footer.html -->
   
       <!-- <div class="row">
         <div class="col-lg-4">
