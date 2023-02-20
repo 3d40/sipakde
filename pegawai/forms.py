@@ -86,5 +86,14 @@ class FormTBerkas(ModelForm):
             'tipe',
             'tanggal_input',
             'tanggal_update',
+        ]
 
+class FormTUser(ModelForm):
+    class Meta :
+        model = TUser
+        fields = [
+           'pengguna',
+           'jenis',
+           'user_akses',
+           'waktu_login'
         ]

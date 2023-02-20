@@ -10,10 +10,10 @@ class TJenisUser(models.Model):
     # user= models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, db_column="user_id")
     # pegawai = models.ForeignKey('TPegawaiSapk', on_delete=models.DO_NOTHING, blank=True, null=True, related_name="pegawai")
     jenis_choice = [
-        ('ver', 'Verifikator'),
-        ('op', 'Operator'),
-        ('peg', 'Pegawai'),
-        {'admin', 'Admin'}
+        ('5', 'Verifikator'),
+        ('2', 'Operator'),
+        ('1', 'Pegawai'),
+        {'4', 'Admin'}
         ]
     jenis =models.CharField(max_length=20, default='peg', choices=jenis_choice)
     class Meta:
@@ -337,10 +337,10 @@ class TBerkas(models.Model):
         return str(self.pns_id)
 
 class TUser(models.Model):
-    id = models.IntegerField(primary_key=True, auto_created=True)
+    id = models.AutoField(primary_key=True)
     pengguna=models.ForeignKey(User, db_column='pengguna',on_delete=models.CASCADE, related_name="usernames")
     jenis = models.ForeignKey('TJenisUser', db_column='jenis', on_delete=models.CASCADE, verbose_name='Jenis Pengguna', default=1)
-    user_akses = models.ForeignKey('TOpd', db_column='user_akses', on_delete=models.CASCADE, verbose_name='Nama OPD', null=True),
+    user_akses = models.ForeignKey('TOpd', db_column ='user_akses', on_delete=models.CASCADE, null=True, blank=True)
     waktu_login = models.DateTimeField(default=datetime.now, blank=True)
 
     class Meta:
@@ -450,3 +450,23 @@ class TStatusBerkas(models.Model):
 
     def __str__(self):
         return str(self.nama)
+
+
+class TRiwayatPendidikan(models.Model):
+    id = models.CharField(primary_key=True, max_length=32 )
+    pengguna = models.ForeignKey('TPegawaiSapk', on_delete=models.DO_NOTHING, null=True, blank=True)
+    tingkat_pendidikan = models.ForeignKey('TTingkatPendidikan', on_delete = models.DO_NOTHING, null=True, blank=True)
+    pendidikan = models.ForeignKey('TPendidikan', on_delete = models.DO_NOTHING, null=True, blank=True)
+    nama_pendidikan = models.TextField(blank=True, null=True)
+    tgl_lulus = models.DateField(default='1900-01-01')
+    tahun_lulus = models.IntegerField(default='1900')
+    nomor_ijazah = models.CharField(max_length=255, blank=True, null=True)
+    nama_sekolah = models.CharField(max_length=255, blank=True, null=True)
+    gelar_depan = models.CharField(max_length=5, blank=True, null=True)
+    gelar_belakang = models.CharField(max_length=5, blank=True, null=True)
+    pendidikan_pertama = models.BooleanField(default=False)
+
+    class Meta:
+        managed = False
+        db_table = 't_riwayat_pendidikan'
+

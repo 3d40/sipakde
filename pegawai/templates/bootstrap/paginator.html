@@ -1,4 +1,4 @@
-<div>
+<!-- <div>
   <span>
     {% if page_obj.has_previous %}
       <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
@@ -11,25 +11,17 @@
     {% endif %}
   </span>
 </div>
-
-
-<!-- <div class="prev_next">-->
-<!--    {% if page_obj.has_previous %}-->
-<!--    <a class="prev btn btn-info" href="?page={{page_obj.previous_page_number}}">Prev</a>-->
-<!--    {% else %}-->
-<!--    <a class="prev btn btn-info" disabled>Prev</a>-->
-<!--    {% endif %}-->
-<!--        {% for pg in page_obj.paginator.page_range %}-->
-<!--          {% if blogs.number == pg %}-->
-<!--            <a href="?page={{pg}}" class="btn btn-default">{{pg}}</a>-->
-<!--          {% else %}-->
-<!--            <a href="?page={{pg}}" class="btn">{{pg}}</a>-->
-<!--          {% endif %}-->
-<!--        {% endfor %}-->
-<!--    <span class="clear_both"></span>-->
-<!--    {% if page_obj.has_next %}-->
-<!--    <a class="next btn btn-info" href="?page={{page_obj.next_page_number}}">Next</a>-->
-<!--    {% else %}-->
-<!--    <a class="next btn btn-info" disabled >Next</a>-->
-<!--    {% endif %}-->
-<!--  </div>-->
+ -->
+ <div class="pagination">
+  <span class="page-links">
+      {% if object_list.has_previous %}
+          <a href="/?page={{ page_obj.previous_page_number }}">previous</a>
+      {% endif %}
+          <span class="page-current">
+              Page {{ object_list.number }} of {{ object_list.paginator.num_pages }}.
+          </span>
+      {% if object_list.has_next %}
+          <a href="/?page={{ object_list.next_page_number }}">next</a>
+      {% endif %}
+  </span>
+</div>

@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     #daftaraplikasi
     'pegawai',
     'widget_tweaks',
-    'search_listview',
+    # 'search_listview',
 ]
 
 MIDDLEWARE = [

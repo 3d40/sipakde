@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, HttpResponse, redirect, get_list_or_404,reverse
-from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView
+from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView, TemplateView
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
 from django.views import View
@@ -19,68 +19,43 @@ from .token import account_activation_token
 from django.core.mail import EmailMessage
 from django.views.generic.edit import CreateView, UpdateView
 from django.core.paginator import Paginator , EmptyPage, PageNotAnInteger
+from django.contrib.auth.forms import AuthenticationForm
+import json
+from django.views.generic import View
 
 
+class MyLoginView(LoginView):
+    redirect_authenticated_user = True
+    
+    def get_success_url(self):
+        return reverse_lazy('pegawai:pegawailist') 
+    
+    def form_invalid(self, form):
+        messages.error(self.request,'Invalid username or password')
+        return self.render_to_response(self.get_context_data(form=form))
 
-# Create your views here.
-# class Login(LoginView):
-#     template_name = 'register/login.html';
-# redirect_authenticated_user = True
 
-def LoginView(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        user = authenticate(username=username, password=password)
-        if user:
-            request.session['user'] = username
-            xxx = TUser.objects.get(pengguna = user)
-            tipeuser = TJenisUser.objects.get(jenis=xxx.jenis)
-
-            if user.is_active and tipeuser.jenis =='Pegawai':
-                pegawai = get_object_or_404(TPegawaiSapk, nip_baru = user)
-                print(pegawai.id) 
-                login(request,user)
-                return render(request, 'pegawai/profile.html',{'pegawai':pegawai})
-            
-            elif user.is_active and tipeuser.jenis =='Operator':
-                data = get_list_or_404(TPegawaiSapk, unor_induk_bkd = xxx.user_akses)
-                login(request,user)
-                page_num = request.GET.get('page', 1)
-                paginator = Paginator(data, 20)
-                try:
-                    page_obj = paginator.page(page_num)
-                except PageNotAnInteger:
-                    page_obj = paginator.page(1)
-                except EmptyPage:
-                    page_obj = paginator.page(paginator.num_pages)
-                return render(request, 'pegawai/pegawai_list.html',{'page_obj':page_obj})
-            
-            elif user.is_active and tipeuser.jenis =='Verifikator':
-                data = TPegawaiSapk.objects.all()
-                login(request,user)
-                page_num = request.GET.get('page', 1)
-                paginator = Paginator(data, 20)
-                try:
-                    page_obj = paginator.page(page_num)
-                except PageNotAnInteger:
-                    page_obj = paginator.page(1)
-                except EmptyPage:
-                    page_obj = paginator.page(paginator.num_pages)
-                return render(request, 'pegawai/pegawai_list.html',{'page_obj':page_obj})
-            else:
-                return HttpResponse("Your account was inactive.")
-        else:
-            print("Someone tried to login and failed.")
-            print("They used username: {} and password: {}".format(username,password))
-            return HttpResponse("Akun anda belum terdaftar")
+def PegawaiList(request):
+    user = request.user.username
+    akun = TUser.objects.get(pengguna =request.user)
+    if akun.jenis.id == 1:
+        pegawai = TPegawaiSapk.objects.filter(nip_baru=user)
+        return render (request, 'pegawai/tpegawaisapk_list.html',{'object_list':pegawai})
+    elif akun.jenis.id == 2:
+        pegawai = TPegawaiSapk.objects.filter(unor_induk_bkd = akun.user_akses)
+        return render (request, 'pegawai/tpegawaisapk_list.html',{'object_list':pegawai})
     else:
-        return render(request, 'register/login.html', {})
+        pegawai = TPegawaiSapk.objects.all()
+        return render (request, 'pegawai/tpegawaisapk_list.html', {'object_list':pegawai})
+
 
 class HomeView(View):
     template_name = 'register/home.html'
     def get(self, request):
         return render(request, self.template_name)
+
+
+
 
 class Logout(LogoutView):
     template_name = 'register/login.html'
@@ -133,53 +108,101 @@ class CustomPasswordChangeView(PasswordChangeView):
         messages.success(self.request, 'Password kamu berhasil diubah')
         return super().form_valid(form)
 
-class HomePageView(ListView):
-    model= TPegawaiSapk
-    template_name = 'pegawai/pegawai_list.html'
-    paginate_by = 25
-    context_object_name ='object_list'
-    
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        jenis = get_object_or_404 (TUser, pengguna = self.request.user)
-        self.filterset = PegawaiFilter(self.request.GET, queryset = queryset)
-        return  self.filterset.qs
-    
 
-    def get_context_data(self, **kwargs):
-        context = super(HomePageView, self).get_context_data(**kwargs)
-        jenis = get_object_or_404 (TUser, pengguna = self.request.user)
-        context['pengguna'] =jenis.jenis 
-        context['form'] = self.filterset.form
-        context['jumlah'] = self.filterset.qs.count()
-        return context
+# class GolonganListView(ListView):
+#     model = TRiwayatGolongan
+#     # form_class = FormTRiwayatGolongan
+#     template_name = 'pegawai/rwgolongan_list.html'
 
-def PegawaiDetail(request, nip_baru):
-    pegawai = get_object_or_404(TPegawaiSapk, nip_baru=nip_baru)
-    return render(request, 'pegawai/profile.html', {'pegawai': pegawai})
-
-
-class GolonganListView(ListView):
-    model = TRiwayatGolongan
-    # form_class = FormTRiwayatGolongan
-    template_name = 'pegawai/rwgolongan_list.html'
+#     def get_qeryset(self):
+#         qs = super().get_queryset()
+#         search_term = self.request.GET.get("search", None)
+#         if search_term is not None:
+#             qs = qs.filter(session_name__icontains=search_term)
+#         return qs
     
 
-    def get_queryset(self, **kwargs):
-        pegawai = get_object_or_404(TPegawaiSapk, nip_baru =self.request.user)
-        qs = super().get_queryset(**kwargs)
-        return qs.filter(orang_id=pegawai.id)
+    # def get_queryset(self, **kwargs):
+    #     pegawai = get_object_or_404(TPegawaiSapk, nip_baru =self.request.user)
+    #     qs = super().get_queryset(**kwargs)
+    #     return qs.filter(orang_id=pegawai.id)
 
-class JabatanListView(ListView):
-    model = TRiwayatJabatan
-    # form_class = FormTRiwayatGolongan
-    template_name = 'pegawai/rwjabatan_list.html'
+
+def GolonganListView(request, id):
+    pegawai = get_object_or_404(TPegawaiSapk, id =id)
+    gol = get_list_or_404(TRiwayatGolongan, orang_id = id)
+    if gol:     
+        context = {
+            'object_list':gol,
+            'pegawai':pegawai
+            }
+        return render(request,'pegawai/rwgolongan_list.html',context)
+    else:
+        context={
+            'objec_list': "Data Tidak Ada"
+        }
+        return render(request,'pegawai/rwgolongan_list.html',context)
+
     
 
-    def get_queryset(self, **kwargs):
-        pegawai = get_object_or_404(TPegawaiSapk, nip_baru =self.request.user)
-        qs = super().get_queryset(**kwargs)
-        return qs.filter(orang_id=pegawai.id)
+
+def JabatanListView(request, id):
+    pegawai = get_object_or_404(TPegawaiSapk, id =id)
+    jabatan = get_list_or_404(TRiwayatJabatan, orang = id)
+    context = {
+        'object_list':jabatan,
+        'pegawai':pegawai
+    }
+    return render(request,'pegawai/rwjabatan_list.html',context)
+
+
+def RiwayatSkpList(request, id):
+    pegawai = get_object_or_404(TPegawaiSapk, id =id)
+    skp = get_list_or_404(TRiwayatDp3, id_pns = id)
+    if skp:
+        try:
+            context = {
+                'object_list':skp,
+                'pegawai':pegawai
+                }
+            return render(request,'pegawai/rwskp_list.html',context)
+        except:
+            context={
+                'objec_list': "Data Tidak Ada"
+                }
+    return render(request,'pegawai/rwskp_list.html',context)
+
+
+def RiwayatPendidikanList(request, id):
+    pegawai = get_object_or_404(TPegawaiSapk, id =id)
+    pendidikan = get_list_or_404(TRiwayatPendidikan, pengguna = id)
+    if pendidikan:
+        try:
+            context = {
+                'object_list':pendidikan,
+                'pegawai':pegawai
+                }
+            return render(request,'pegawai/rwpendidikan_list.html',context)
+        except:
+            context={
+                'objec_list': "Data Tidak Ada"
+                }
+    return render(request,'pegawai/rwpendidikan_list.html',context)
+
+
+
+
+
+# class JabatanListView(ListView):
+#     model = TRiwayatJabatan
+#     # form_class = FormTRiwayatGolongan
+#     template_name = 'pegawai/rwjabatan_list.html'
+    
+
+#     def get_queryset(self, **kwargs):
+#         pegawai = get_object_or_404(TPegawaiSapk, nip_baru =self.request.user)
+#         qs = super().get_queryset(**kwargs)
+#         return qs.filter(orang_id=pegawai.id)
 
 class JabatanEditView(UpdateView):
     template_name = 'pegawai/triwayatjabatan_update_form.html'
@@ -229,10 +252,10 @@ class PegawaiDetailView(DetailView):
     template_name = 'pegawai/profile.html'
     context_object_name = 'pegawai'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+    def get_context_data(self, *args,**kwargs):
+        context = super(PegawaiDetailView,self).get_context_data(*args, **kwargs)
+        # add extra field       
         return context
-
 
 class PangkatEditView(UpdateView):
     model = TRiwayatGolongan
@@ -271,20 +294,20 @@ class PangkatEditView(UpdateView):
 
     
 
-class RiwayatSkpList(ListView):
-    model = TRiwayatDp3
-    template_name = 'pegawai/rwskp_list.html'
+# class RiwayatSkpList(ListView):
+#     model = TRiwayatDp3
+#     template_name = 'pegawai/rwskp_list.html'
 
-    def get_queryset(self, **kwargs):
-        pegawai = get_object_or_404(TPegawaiSapk, nip_baru =self.request.user)
-        qs = super().get_queryset(**kwargs)
-        return qs.filter(id_pns=pegawai.id)
+#     def get_queryset(self, **kwargs):
+#         pegawai = get_object_or_404(TPegawaiSapk, nip_baru =self.request.user)
+#         qs = super().get_queryset(**kwargs)
+#         return qs.filter(id_pns=pegawai.id)
     
-    def get_context_data(self, **kwargs):
-        context = super(RiwayatSkpList, self).get_context_data(**kwargs)
-        context['pegawai'] = get_object_or_404(TPegawaiSapk, nip_baru =self.request.user)
-        context['judul'] = " Riwayat Sasaran Kinerja Pegawai"
-        return context
+#     def get_context_data(self, **kwargs):
+#         context = super(RiwayatSkpList, self).get_context_data(**kwargs)
+#         context['pegawai'] = get_object_or_404(TPegawaiSapk, nip_baru =self.request.user)
+#         context['judul'] = " Riwayat Sasaran Kinerja Pegawai"
+#         return context
 
 
 class SkpEditView(UpdateView):
