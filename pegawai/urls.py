@@ -12,29 +12,41 @@ urlpatterns = [
     #Pegawai
 
     path('intaian/profile/<str:pk>', PegawaiDetailView.as_view(), name='profile'),
+    path('intaian/profile/<id>/golongan', GolonganListView, name='rwgolongan'),
+    path('intaian/profile/<id>/jabatan', JabatanListView, name='rwjabatan'),
+    path('intaian/profile/<id>/skp', RiwayatSkpList, name='rwskp'),
+    path('intaian/profile/<id>/pendidikan', RiwayatPendidikanList, name='rwpendidikan'),
+    path('intaian/pegawai/<id>/hukdis', RiwayatHukdisList, name='rwhukdis'),
+    path('intaian/pegawai/<id>/kursus', RiwayatKursusList, name='kursus'),
+    
+    
+    
     # path('intaian/pegawailist/', PegawaiList.as_view(), name='pegawailist'),
     path('intaian/pegawailist/', PegawaiList, name='pegawailist'),
 
     #Golongan
     # path('intaian/profile/<str:pk>/golongan', GolonganListView.as_view(), name='rwgolongan'),
-    path('intaian/profile/<id>/golongan', GolonganListView, name='rwgolongan'),
+    
     path('intaian/pegawai/update/golongan/<str:pk>', PangkatEditView.as_view(), name='editpangkat'),
 
     #Jabatan
     # path('intaian/pegawai/jabatan/', JabatanListView.as_view() , name='rwjabatan'),
-    path('intaian/pegawai/<id>/jabatan', JabatanListView, name='rwjabatan'),
+    
     path('intaian/pegawai/edit/jabatan/<pk>', JabatanEditView.as_view(), name='editjabatan'),
     path('intaian/pegawai/input/jabatan/', JabatanInputView.as_view(), name='inputjabatan'),
 
 
     #skp
     # path('intaian/pegawai/skp/', RiwayatSkpList.as_view() , name='rwskp'),
-    path('intaian/pegawai/<id>/skp', RiwayatSkpList, name='rwskp'),
+    
     path('intaian/pegawai/edit/skp/<pk>', SkpEditView.as_view(), name='editskp'),
     path('intaian/pegawai/input/skp/', SkpInputView.as_view(), name='inputskp'),
 
     #pendidikan
-    path('intaian/pegawai/<id>/pendidikan', RiwayatPendidikanList, name='rwpendidikan'),
+    
+
+    #Hukdis
+   
 
 
 ]

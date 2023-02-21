@@ -110,7 +110,7 @@ class TJabatan(models.Model):
     jenis_jabatan = models.CharField(max_length=27)
     id_eselon = models.ForeignKey('Teselon', db_column='id_eselon', on_delete=models.DO_NOTHING, null=True)
     bup = models.IntegerField()
-    stastus = models.CharField(max_length=5)
+    status = models.ForeignKey('TStatusBerkas', on_delete=models.CASCADE, null=True, blank=True)
 
     class Meta:
         managed = True
@@ -470,3 +470,70 @@ class TRiwayatPendidikan(models.Model):
         managed = False
         db_table = 't_riwayat_pendidikan'
 
+
+def _upload_path_skp(instance,filename):
+    return instance.get_upload_path(filename)
+
+class TRiwayatHukdis(models.Model):
+    id = models.CharField(primary_key=True, max_length=32)
+    orang = models.ForeignKey('TPegawaiSapk', on_delete=models.DO_NOTHING, null=True, blank=True)
+    golongan_id = models.IntegerField(blank=True, null=True)
+    jenis_hukuman_id=  models.IntegerField(blank=True, null=True)
+    nama_hukuman_disiplin = models.CharField(max_length=255, blank=True, null=True)
+    no_sk = models.CharField(max_length=255, blank=True, null=True)
+    sk_tanggal = models.DateField(default='1900-01-01')
+    tanggal_mulai = models.DateField(default='1900-01-01')
+    masa_tahun = models.IntegerField(blank=True, null=True)
+    masa_bulan = models.IntegerField(blank=True, null=True)
+    tanggal_akhir = models.DateField(default='1900-01-01')
+    no_pp =models.CharField(max_length=255, blank=True, null=True)
+    no_sk_pembatalan = models.CharField(max_length=255, blank=True, null=True)
+    tanggal_sk_pembatalan =models.DateField(default='1900-01-01')
+    dokumen = models.FileField(upload_to=_upload_path_skp)
+    status = models.ForeignKey('TStatusBerkas', on_delete=models.CASCADE, null=True, blank=True)
+
+    class Meta:
+        managed = False
+        db_table = 't_riwayat_hukdis'
+    
+    def __str__(self):
+        return str(self.nama_hukuman_disiplin)
+    
+    def get_upload_path(self,filename):
+        filelama = self.orang, self.tahun
+        print(self.orang)
+        filename = {"Hukdis_"},filelama
+        return "{}/{}".format(self.orang, filename)
+
+def _upload_path_skp(instance,filename):
+    return instance.get_upload_path(filename)
+
+class TRiwayatKursus(models.Model):
+    id = models.CharField(primary_key=True, max_length=32)
+    orang = models.ForeignKey('TPegawaiSapk', on_delete=models.DO_NOTHING, null=True, blank=True)
+    kursus_id =models.CharField(max_length=255, blank=True, null=True)
+    jenis =models.CharField(max_length=255, blank=True, null=True)
+    nama_kursus = models.CharField(max_length=255, blank=True, null=True)
+    jumlah_jam = models.IntegerField()
+    tanggal_kursus = models.DateField(default='1900-01-01')
+    tahun = models.IntegerField(default='1990')
+    instansi_id = models.CharField(max_length=255, blank=True, null=True)
+    nama_instansi = models.TextField(blank=True, null=True)
+    institusi_penyelenggara =models.CharField(max_length=255, blank=True, null=True)
+    tipe_kursus = models.CharField(max_length=255, blank=True, null=True)
+    nomor_sertifikat = models.CharField(max_length=255, blank=True, null=True)
+    status = models.ForeignKey('TStatusBerkas', on_delete=models.CASCADE, null=True, blank=True)
+    dokumen = models.FileField(upload_to=_upload_path_skp)
+
+    class Meta:
+        managed = False
+        db_table = 't_riwayat_kursus'
+
+    def __str__(self):
+        return str(self.nama_kursus)
+    
+    def get_upload_path(self,filename):
+        filelama = self.orang, self.tahun
+        print(self.orang)
+        filename = {"Kursus_"},filelama
+        return "{}/{}".format(self.orang, filename)

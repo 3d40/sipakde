@@ -40,13 +40,29 @@ def PegawaiList(request):
     akun = TUser.objects.get(pengguna =request.user)
     if akun.jenis.id == 1:
         pegawai = TPegawaiSapk.objects.filter(nip_baru=user)
-        return render (request, 'pegawai/tpegawaisapk_list.html',{'object_list':pegawai})
+        filterku = PegawaiFilter(request.GET, queryset=pegawai)
+        context = {
+            'filterku': filterku,
+            'object_list': pegawai,
+            }
+        return render (request, 'pegawai/tpegawaisapk_list.html',context)
     elif akun.jenis.id == 2:
         pegawai = TPegawaiSapk.objects.filter(unor_induk_bkd = akun.user_akses)
-        return render (request, 'pegawai/tpegawaisapk_list.html',{'object_list':pegawai})
+        filterku = PegawaiFilter(request.GET, queryset=pegawai)
+        context = {
+            'filterku': filterku,
+            'object_list': pegawai,
+            }
+        return render (request, 'pegawai/tpegawaisapk_list.html',context)
     else:
         pegawai = TPegawaiSapk.objects.all()
-        return render (request, 'pegawai/tpegawaisapk_list.html', {'object_list':pegawai})
+        filterku = PegawaiFilter(request.GET, queryset=pegawai)
+        context = {
+            'filterku': filterku,
+            'object_list': pegawai,
+            }
+        
+        return render (request, 'pegawai/tpegawaisapk_list.html', context)
 
 
 class HomeView(View):
@@ -158,7 +174,11 @@ def JabatanListView(request, id):
 
 def RiwayatSkpList(request, id):
     pegawai = get_object_or_404(TPegawaiSapk, id =id)
-    skp = get_list_or_404(TRiwayatDp3, id_pns = id)
+    skp = TRiwayatDp3.objects.filter( id_pns = id)
+    context = {
+        'object_list':skp,
+        'pegawai':pegawai
+        }
     if skp:
         try:
             context = {
@@ -166,10 +186,11 @@ def RiwayatSkpList(request, id):
                 'pegawai':pegawai
                 }
             return render(request,'pegawai/rwskp_list.html',context)
-        except:
+        except:       
             context={
                 'objec_list': "Data Tidak Ada"
                 }
+            return render(request,'pegawai/rwskp_list.html',context)
     return render(request,'pegawai/rwskp_list.html',context)
 
 
@@ -180,7 +201,7 @@ def RiwayatPendidikanList(request, id):
         try:
             context = {
                 'object_list':pendidikan,
-                'pegawai':pegawai
+                'pegawai':pegawai,
                 }
             return render(request,'pegawai/rwpendidikan_list.html',context)
         except:
@@ -188,6 +209,49 @@ def RiwayatPendidikanList(request, id):
                 'objec_list': "Data Tidak Ada"
                 }
     return render(request,'pegawai/rwpendidikan_list.html',context)
+
+def RiwayatHukdisList(request, id):
+    pegawai = get_object_or_404(TPegawaiSapk, id =id)
+    hukdis = TRiwayatHukdis.objects.filter( orang = id)
+    context = {
+        'object_list':hukdis,
+        'pegawai':pegawai
+        }
+    if hukdis:
+        try:
+            context = {
+                'object_list':hukdis,
+                'pegawai':pegawai
+                }
+            return render(request,'pegawai/rwhukdis_list.html',context)
+        except:       
+            context={
+                'objec_list': "Data Tidak Ada"
+                }
+            return render(request,'pegawai/rwhukdis_list.html',context)
+    return render(request,'pegawai/rwhukdis_list.html',context)
+
+
+def RiwayatKursusList(request, id):
+    pegawai = get_object_or_404(TPegawaiSapk, id =id)
+    kursus = TRiwayatKursus.objects.filter( orang = id)
+    context = {
+        'object_list':kursus,
+        'pegawai':pegawai
+        }
+    if kursus:
+        try:
+            context = {
+                'object_list':kursus,
+                'pegawai':pegawai
+                }
+            return render(request,'pegawai/rwkursus_list.html',context)
+        except:       
+            context={
+                'objec_list': "Data Tidak Ada"
+                }
+            return render(request,'pegawai/rwkursus_list.html',context)
+    return render(request,'pegawai/rwkursus_list.html',context)
 
 
 

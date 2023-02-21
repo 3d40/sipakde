@@ -2,7 +2,7 @@
 {% block content %}
 <form method="GET" action="{% url 'pegawai:pegawailist'%}">
   {% csrf_token %}
-  {{form.as_table}}
+  {{filterku.form.as_table}}
   <input type="submit" value="Submit" class="btn btn-primary"/>
             Ada <span class="text-muted text-center text-sm-left d-block d-sm-inline-block">{{jumlah}} </span> Hasil Pencarian
             <div class="table-responsive pt-3 " >
@@ -18,7 +18,7 @@
                     <th>Tingkat Pendidikan</th>
                   </tr>
                 </thead>
-                {% for obj in object_list %}
+                {% for obj in filterku.qs %}
                 <tbody>
                   <tr>
                     <td>
@@ -37,7 +37,7 @@
 
                     </td>
                     <td >
-                        {obj.jabatan}                               
+                        {{obj.jabatan}}                               
                       </a>
                     </td>
                     <td>
