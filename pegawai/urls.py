@@ -11,13 +11,16 @@ urlpatterns = [
     path('changepassword/', CustomPasswordChangeView.as_view(), name='password_change'),
     #Pegawai
 
-    path('intaian/profile/<str:pk>', PegawaiDetailView.as_view(), name='profile'),
-    path('intaian/profile/<id>/golongan', GolonganListView, name='rwgolongan'),
-    path('intaian/profile/<id>/jabatan', JabatanListView, name='rwjabatan'),
-    path('intaian/profile/<id>/skp', RiwayatSkpList, name='rwskp'),
-    path('intaian/profile/<id>/pendidikan', RiwayatPendidikanList, name='rwpendidikan'),
-    path('intaian/pegawai/<id>/hukdis', RiwayatHukdisList, name='rwhukdis'),
-    path('intaian/pegawai/<id>/kursus', RiwayatKursusList, name='kursus'),
+    # path('intaian/profile/<str:pk>', PegawaiDetailView.as_view(), name='profile'),
+    path('intaian/profile/<str:id>', PegawaiDetailView, name='profile'),
+    path('intaian/profile/<str:id>/golongan', GolonganListView, name='rwgolongan'),
+    path('intaian/profile/<str:id>/jabatan', JabatanListView, name='rwjabatan'),
+    # path('intaian/profile/<id>/jabatan', JabatanEditView, name='editjabatan'),
+    path('intaian/profile/<str:id>/jabatan/input', JabatanInputView.as_view(), name='inputjabatan'),
+    path('intaian/profile/<str:id>/skp', RiwayatSkpList, name='rwskp'),
+    path('intaian/profile/<str:id>/pendidikan', RiwayatPendidikanList, name='rwpendidikan'),
+    path('intaian/profile/<str:id>/hukdis', RiwayatHukdisList, name='rwhukdis'),
+    path('intaian/profile/<str:id>/kursus', RiwayatKursusList, name='kursus'),
     
     
     
@@ -32,8 +35,8 @@ urlpatterns = [
     #Jabatan
     # path('intaian/pegawai/jabatan/', JabatanListView.as_view() , name='rwjabatan'),
     
-    path('intaian/pegawai/edit/jabatan/<pk>', JabatanEditView.as_view(), name='editjabatan'),
-    path('intaian/pegawai/input/jabatan/', JabatanInputView.as_view(), name='inputjabatan'),
+    path('intaian/pegawai/edit/jabatan/<str:id>', JabatanEditView, name='editjabatan'),
+    # path('intaian/pegawai/input/jabatan/', JabatanInputView.as_view(), name='inputjabatan'),
 
 
     #skp

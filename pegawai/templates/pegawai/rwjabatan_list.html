@@ -19,7 +19,7 @@
               <p class="card-description">
                 {{pegawai.nip_baru}} <code>{{judul}}</code>
               </p>
-              <a href="{%url 'pegawai:inputjabatan' %}" class="icon-paper menu-icon">
+              <a href="{%url 'pegawai:inputjabatan' id=pegawai.pk %}" class="icon-paper menu-icon">
                 <span class="">Tambah Data</span>
               </a>
               <div class="table-responsive pt-3">
@@ -56,7 +56,7 @@
                         {{forloop.counter}}
                       </td>
                       <td>
-                        <a href="{% url 'pegawai:editjabatan' data.id %}">{{data.jabatan.nama_jabatan}}</a> 
+                        <a href="#">{{data.jabatan.nama_jabatan}}</a> 
                       </td>
                       <td>
                         {{data.jenis_jabatan}}
@@ -72,7 +72,7 @@
                       </td>
                       <td>
                         {% if data.dokumen %}
-                        <a href="{{data.dokumen.url}}">Lihat Arsip</a>
+                        <a href="{{data.get_absolute_url}}">Lihat Arsip</a>
                         {% else %}
                         data belum data
                         {% endif %}

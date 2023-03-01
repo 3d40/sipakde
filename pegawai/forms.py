@@ -6,6 +6,10 @@ from .models import *
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+from functools import partial
+from datetime import date
+
+DateInput = partial(forms.DateInput, {'class': 'datepicker'})
 
 class FormTpegawaiSapk(ModelForm):
     class Meta:
@@ -44,10 +48,20 @@ class FormTRiwayatGolongan(ModelForm):
 
 
 class FormTriwayatJabatan(ModelForm):
+    today = date.today()
+    tmt_jabatan = forms.DateField(widget=forms.TextInput(attrs={'min': today, 'value': today, 'type': 'date'}), required=True)
+    tmt_pelantikan = forms.DateField(widget=forms.TextInput(attrs={'min': today, 'value': today, 'type': 'date'}), required=True)
+    tanggal_sk = forms.DateField(widget=forms.TextInput(attrs={'min': today, 'value': today, 'type': 'date'}), required=True)
+
+    def __init__(self, *args, **kwargs):
+        super(FormTriwayatJabatan, self).__init__(*args, **kwargs)
+        self.fields['orang'].disabled = True
+
     class Meta :
         model = TRiwayatJabatan
         fields =('orang','unor', 'jenis_jabatan','eselon', 'tmt_jabatan', 'nomor_sk', 'tanggal_sk', 'tmt_pelantikan', 'dokumen')
-
+    
+    
 
 class FormRiwayatSkp(ModelForm):
     class Meta :

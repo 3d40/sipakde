@@ -22,9 +22,76 @@ from django.core.paginator import Paginator , EmptyPage, PageNotAnInteger
 from django.contrib.auth.forms import AuthenticationForm
 import json
 from django.views.generic import View
+from django.template.loader import render_to_string
+from .token import AccountActivationTokenGenerator
+
+from ast import Slice
+from cgitb import enable
+import email
+from multiprocessing import context
+from operator import ge
+from pickle import FALSE
+from pickletools import int4
+from re import template
+from time import strftime
+from dateutil.relativedelta import *
+from codecs import namereplace_errors
+import datetime
+from itertools import count
+from pyexpat import model
+from tkinter import Y
+from turtle import update
+from django.conf import settings
+from webbrowser import get
+from django.contrib.auth.tokens import default_token_generator
+from django.utils import timezone
+from django.contrib.auth import login, authenticate
+from django.contrib.auth.decorators import login_required
+from django.core.files.storage import FileSystemStorage
+
+from .forms import *
+from django.views.generic import (
+    ListView,
+    DetailView,
+    CreateView,
+    UpdateView,
+    DeleteView
+)
+from django.views.generic.edit import FormMixin, SingleObjectMixin
+from django.db.models import Q
+from django.shortcuts import get_list_or_404, render, get_object_or_404, redirect, HttpResponseRedirect, reverse
+from .models import *
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+from django.template.loader import render_to_string
+from .token import AccountActivationTokenGenerator
+from django.contrib.auth import login
+from django.contrib.auth.models import User
+from django.shortcuts import render, redirect
+from django.utils.encoding import force_str as force_text
+from django.contrib.auth import get_user_model
+
+from django.http import HttpResponse
+from django.shortcuts import render, redirect
+from django.contrib.auth import login, authenticate
+from .forms import SignupForm
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils.http import urlsafe_base64_encode
+from django.template.loader import render_to_string
+from .token import account_activation_token
+from django.core.mail import EmailMessage
+from django.contrib.auth.models import User
+from datetime import date
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+import os
+from django.urls import reverse,reverse_lazy
+IMAGE_FILE_TYPES = ['png', 'jpg', 'jpeg', 'pdf']
 
 
-class MyLoginView(LoginView):
+
+
+class LoginView(LoginView):
     redirect_authenticated_user = True
     
     def get_success_url(self):
@@ -41,27 +108,56 @@ def PegawaiList(request):
     if akun.jenis.id == 1:
         pegawai = TPegawaiSapk.objects.filter(nip_baru=user)
         filterku = PegawaiFilter(request.GET, queryset=pegawai)
+        p = Paginator(filterku.qs, 25)
+        page = request.GET.get('page')
+        
+        try:
+            response = p.page(page)
+        except PageNotAnInteger:
+            response = p.page(1)
+        except EmptyPage:from django.utils.http import urlsafe_base64_encode
+        response = p.page(p.num_pages)
         context = {
             'filterku': filterku,
             'object_list': pegawai,
+            'filter':response
             }
         return render (request, 'pegawai/tpegawaisapk_list.html',context)
     elif akun.jenis.id == 2:
         pegawai = TPegawaiSapk.objects.filter(unor_induk_bkd = akun.user_akses)
         filterku = PegawaiFilter(request.GET, queryset=pegawai)
+        p = Paginator(filterku.qs, 25)
+        page = request.GET.get('page')
+        
+        try:
+            response = p.page(page)
+        except PageNotAnInteger:
+            response = p.page(1)
+        except EmptyPage:
+            response = p.page(p.num_pages)
         context = {
             'filterku': filterku,
             'object_list': pegawai,
+            'filter':response
             }
         return render (request, 'pegawai/tpegawaisapk_list.html',context)
     else:
         pegawai = TPegawaiSapk.objects.all()
         filterku = PegawaiFilter(request.GET, queryset=pegawai)
+        p = Paginator(filterku.qs, 25)
+        page = request.GET.get('page')
+        
+        try:
+            response = p.page(page)
+        except PageNotAnInteger:
+            response = p.page(1)
+        except EmptyPage:
+            response = p.page(p.num_pages)
         context = {
             'filterku': filterku,
             'object_list': pegawai,
+            'filter':response
             }
-        
         return render (request, 'pegawai/tpegawaisapk_list.html', context)
 
 
@@ -193,22 +289,48 @@ def RiwayatSkpList(request, id):
             return render(request,'pegawai/rwskp_list.html',context)
     return render(request,'pegawai/rwskp_list.html',context)
 
-
 def RiwayatPendidikanList(request, id):
-    pegawai = get_object_or_404(TPegawaiSapk, id =id)
-    pendidikan = get_list_or_404(TRiwayatPendidikan, pengguna = id)
+    pegawai = get_object_or_404(TPegawaiSapk, id = id)
+    pendidikan = TRiwayatPendidikan.objects.filter( pengguna = id)
     if pendidikan:
         try:
             context = {
                 'object_list':pendidikan,
-                'pegawai':pegawai,
+                'pegawai':pegawai
                 }
             return render(request,'pegawai/rwpendidikan_list.html',context)
-        except:
+        except:       
             context={
-                'objec_list': "Data Tidak Ada"
+                'objec_list': "Data Tidak Ada",
+                'pegawai':pegawai
                 }
-    return render(request,'pegawai/rwpendidikan_list.html',context)
+            return render(request,'pegawai/rwpendidikan_list.html',context)
+    return render(request,'pegawai/rwpendidikan_list.html')
+
+
+# def RiwayatPendidikanList(request, id):
+#     pegawai = get_object_or_404(TPegawaiSapk, id=id)
+#     pendidikan = TRiwayatPendidikan.objects.filter( pengguna = id)
+#     context = {
+#         'object_list':pendidikan,
+#         'pegawai':pegawai
+#         }
+#     if pendidikan:
+#         try:
+#             context = {
+#                 'object_list':pendidikan,
+#                 'pegawai':pegawai
+#                 }
+#             return render(request,'pegawai/rwpendidikan_list.html',context)
+#         except:       
+#             context={
+#                 'objec_list': "Data Tidak Ada"
+#                 }
+#             return render(request,'pegawai/rwpendidikan_list.html',context)
+#     return render(request,'pegawai/rwpendidikan_list.html', context)
+
+
+
 
 def RiwayatHukdisList(request, id):
     pegawai = get_object_or_404(TPegawaiSapk, id =id)
@@ -268,13 +390,27 @@ def RiwayatKursusList(request, id):
 #         qs = super().get_queryset(**kwargs)
 #         return qs.filter(orang_id=pegawai.id)
 
-class JabatanEditView(UpdateView):
-    template_name = 'pegawai/triwayatjabatan_update_form.html'
-    model = TRiwayatJabatan
-    form_class = FormTriwayatJabatan
+# class JabatanEditView(UpdateView):
+#     template_name = 'pegawai/triwayatjabatan_update_form.html'
+#     model = TRiwayatJabatan
+#     form_class = FormTriwayatJabatan
     
-    def get_success_url(self):
-        return reverse("pegawai:rwjabatan")
+#     def get_success_url(self):
+#         return reverse("pegawai:rwjabatan")
+
+def JabatanEditView(request, id):                                         
+    data = get_object_or_404(TRiwayatJabatan, id=id)
+    form = FormTriwayatJabatan(instance=data)
+    if request.method == "POST":
+        form = FormTriwayatJabatan(request.POST, instance=data)
+        if form.is_valid():
+            form.save()
+            return redirect ('pegawai:rwjabatan')
+    context = {
+        "form":form
+        }
+    return render(request, 'pegawai/triwayatjabatan_update_form.html', context)
+
 
 class JabatanInputView(CreateView):
     model = TRiwayatJabatan
@@ -284,7 +420,6 @@ class JabatanInputView(CreateView):
     def get_initial(self):
         super(JabatanInputView, self).get_initial()
         pegawai = TPegawaiSapk.objects.get(nip_baru=self.request.user)
-        user = self.request.user
         self.initial = {
             "orang":pegawai.id, 
             "unor":pegawai.unor_induk_bkd, 
@@ -311,15 +446,25 @@ class JabatanInputView(CreateView):
 #     return render(request, 'pegawai/pangkatinput.html', {'form':form})
 
 
-class PegawaiDetailView(DetailView):
-    model = TPegawaiSapk
-    template_name = 'pegawai/profile.html'
-    context_object_name = 'pegawai'
+# class PegawaiDetailView(DetailView):
+#     model = TPegawaiSapk
+#     template_name = 'pegawai/profile.html'
+#     context_object_name = 'pegawai'
 
-    def get_context_data(self, *args,**kwargs):
-        context = super(PegawaiDetailView,self).get_context_data(*args, **kwargs)
-        # add extra field       
-        return context
+#     def get_context_data(self, *args,**kwargs):
+#         context = super(PegawaiDetailView,self).get_context_data(*args, **kwargs)    
+#         return context
+
+def PegawaiDetailView(request, id):
+    # dictionary for initial data with
+    # field names as keys
+    context ={}
+    pegawai = TPegawaiSapk.objects.get(id =id)
+    # add the dictionary during initialization
+    context= {
+        'pegawai' : pegawai
+    }
+    return render(request, "pegawai/profile.html", context)
 
 class PangkatEditView(UpdateView):
     model = TRiwayatGolongan

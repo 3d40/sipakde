@@ -1,6 +1,5 @@
-
 <li class="breadcrumb-item" aria-current="page"><a href="{% url 'pegawai:home'%}">Dashboard</a></li>
-<li class="breadcrumb-item" aria-current="page"><a href="{% url 'pegawai:profile' pegawai.pk%}">Profil Pegawai</a></li>
+<li class="breadcrumb-item" aria-current="page"><a href="{% url 'pegawai:profile' pegawai.id %}">Profil Pegawai</a></li>
 <li class="breadcrumb-item" aria-current="page"><a href="{% url 'pegawai:rwjabatan' id=pegawai.pk%}">Jabatan</a></li>
 <li class="breadcrumb-item" aria-current="page"><a href="{% url 'pegawai:rwgolongan' id=pegawai.pk %}">Riwayat Golongan</a></li>
 <li class="breadcrumb-item" aria-current="page"><a href="{% url 'pegawai:rwskp' id=pegawai.pk %}">Riwayat SKP</a></li>

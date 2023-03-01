@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.core.validators import FileExtensionValidator
 from datetime import datetime
 from django.utils import timezone
+from django.urls import reverse
 
 
 
@@ -215,6 +216,7 @@ class TTingkatPendidikan(models.Model):
     nama = models.CharField(db_column='NAMA', max_length=25)  # Field name made lowercase.
     golongan_awal = models.CharField(db_column='GOLONGAN_AWAL', max_length=3)  # Field name made lowercase.
     golongan_akhir = models.CharField(db_column='GOLONGAN_AKHIR', max_length=3)  # Field name made lowercase.
+    point = models.IntegerField(db_column='POINT', null=True, blank=True)  # Field name made lowercase.
 
     class Meta:
         managed = True
@@ -304,6 +306,10 @@ class TRiwayatGolongan(models.Model):
         filename = {"SKKP_"},filelama
         return "{}/{}".format(self.nip_baru, filename)
 
+    def get_absolute_url(self):
+        return reverse('golongan_detail', kwargs={"id": str(self.id)})
+
+
 class TBerkas(models.Model):
     status_choice =(
         ("1", "User"),
@@ -360,17 +366,17 @@ def _upload_path_jabatan(instance,filename):
 class TRiwayatJabatan(models.Model):
     id = models.CharField(db_column='ID', primary_key=True, max_length=32, editable=False)  # Field name made lowercase.
     # nip = models.CharField(db_column='NIP', max_length=18)  # Field name made lowercase.
-    orang = models.ForeignKey('TPegawaiSapk', blank = True, null=True, on_delete = models.CASCADE, db_column='id_pns')  # Field name made lowercase.
+    orang = models.ForeignKey('TPegawaiSapk', blank = True, null=True, on_delete = models.CASCADE, db_column='id_pns', verbose_name='Nama')  # Field name made lowercase.
     # nama = models.CharField(db_column='Nama', max_length=40)  # Field name made lowercase.
-    unor = models.ForeignKey('TUnor', on_delete=models.CASCADE, db_column='Id_Unor')  # Field name made lowercase.
-    jenis_jabatan = models.ForeignKey('TJenisJabatan', blank=True, null=True, on_delete=models.CASCADE, db_column='Id_Jenis_Jabatan')  # Field name made lowercase.
+    unor = models.ForeignKey('TUnor', on_delete=models.CASCADE, db_column='Id_Unor', verbose_name='Unit Organisasi')  # Field name made lowercase.
+    jenis_jabatan = models.ForeignKey('TJenisJabatan', blank=True, null=True, on_delete=models.CASCADE, db_column='Id_Jenis_Jabatan', verbose_name='Jenis Jabatan')  # Field name made lowercase.
     jabatan = models.ForeignKey('TJabatan', on_delete=models.DO_NOTHING, db_column='id_jabatan',  verbose_name ='Nama Jabatan', null=True, blank=True)  # Field name made lowercase.
     eselon = models.ForeignKey('TEselon' , on_delete=models.CASCADE, db_column='id_eselon', verbose_name="Eselon", default=53)  # Field name made lowercase.
-    tmt_jabatan = models.DateField(db_column='TMT_JABATAN', max_length=14, default="1900-01-01", null =True, blank=True)  # Field name made lowercase.
-    nomor_sk = models.CharField(db_column='Nomor_SK', max_length=52, blank=True, null=True)  # Field name made lowercase.
-    tanggal_sk = models.DateField(db_column='Tanggal_SK', blank=True, null=True, default="1900-01-01")  # Field name made lowercase.
+    tmt_jabatan = models.DateField(db_column='TMT_JABATAN', max_length=14, default="1900-01-01", null =True, blank=True, verbose_name='TMT Jabatan')  # Field name made lowercase.
+    nomor_sk = models.CharField(db_column='Nomor_SK', max_length=52, blank=True, null=True, verbose_name='Nomor SK')  # Field name made lowercase.
+    tanggal_sk = models.DateField(db_column='Tanggal_SK', blank=True, null=True, default="1900-01-01", verbose_name='Tanggal SK')  # Field name made lowercase.
     # id_satuan_kerja = models.CharField(db_column='Id_Satuan_Kerja', max_length=32, verbose_name ='Satuan Kerja')  # Field name made lowercase.
-    tmt_pelantikan = models.DateField(db_column='TMT_Pelantikan', blank=True, null=True, default="1900-01-01") # Field name made lowercase.
+    tmt_pelantikan = models.DateField(db_column='TMT_Pelantikan', blank=True, null=True, default="1900-01-01", verbose_name='TMT Pelantikan') # Field name made lowercase.
     berkas = models.ForeignKey('TBerkas', on_delete=models.CASCADE, blank=True, null=True,)
     dokumen = models.FileField(upload_to=_upload_path_jabatan, null=True, blank=True)
 
@@ -382,9 +388,13 @@ class TRiwayatJabatan(models.Model):
         return self.orang.nama
     
     def get_upload_path(self,filename):
-        filelama = self.orang.nip_baru, self.id_jabatan.nama_jabatan
+        filelama = self.orang.nip_baru, self.jabatan
         filename = {"JABATAN_"},filelama
         return "{}/{}".format(self.orang.nip_baru, filename)
+    
+    def get_absolute_url(self):
+        return reverse('pegawai:inputjabatan', args=[str(self.orang.id)])
+    
 
 
 
@@ -451,6 +461,8 @@ class TStatusBerkas(models.Model):
     def __str__(self):
         return str(self.nama)
 
+def _upload_path_skp(instance,filename):
+    return instance.get_upload_path(filename)
 
 class TRiwayatPendidikan(models.Model):
     id = models.CharField(primary_key=True, max_length=32 )
@@ -465,10 +477,21 @@ class TRiwayatPendidikan(models.Model):
     gelar_depan = models.CharField(max_length=5, blank=True, null=True)
     gelar_belakang = models.CharField(max_length=5, blank=True, null=True)
     pendidikan_pertama = models.BooleanField(default=False)
+    status = models.ForeignKey('TStatusBerkas', on_delete=models.CASCADE, null=True, blank=True)
+    dokumen = models.FileField(upload_to=_upload_path_skp)
 
     class Meta:
         managed = False
         db_table = 't_riwayat_pendidikan'
+    
+    def __str__(self):
+        return str(self.nama_pendidikan)
+
+    def get_upload_path(self,filename):
+        filelama = self.pengguna, self.pendidikan
+        print(self.pengguna)
+        filename = {"Pendidikan_"},filelama
+        return "{}/{}".format(self.pengguna, filename)
 
 
 def _upload_path_skp(instance,filename):
@@ -495,6 +518,7 @@ class TRiwayatHukdis(models.Model):
     class Meta:
         managed = False
         db_table = 't_riwayat_hukdis'
+
     
     def __str__(self):
         return str(self.nama_hukuman_disiplin)

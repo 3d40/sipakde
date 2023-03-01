@@ -14,14 +14,14 @@
  -->
  <div class="pagination">
   <span class="page-links">
-      {% if object_list.has_previous %}
-          <a href="/?page={{ page_obj.previous_page_number }}">previous</a>
+      {% if filter.has_previous %}
+          <a href="?page={{ page_obj.previous_page_number }}">previous</a>
       {% endif %}
           <span class="page-current">
-              Page {{ object_list.number }} of {{ object_list.paginator.num_pages }}.
+              Page {{ filter.number }} of {{ filter.paginator.num_pages }}.
           </span>
-      {% if object_list.has_next %}
-          <a href="/?page={{ object_list.next_page_number }}">next</a>
+      {% if filter.has_next %}
+          <a href="?page={{ filter.next_page_number }}">next</a>
       {% endif %}
   </span>
 </div>
