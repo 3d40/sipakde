@@ -378,6 +378,7 @@ class TRiwayatJabatan(models.Model):
     # id_satuan_kerja = models.CharField(db_column='Id_Satuan_Kerja', max_length=32, verbose_name ='Satuan Kerja')  # Field name made lowercase.
     tmt_pelantikan = models.DateField(db_column='TMT_Pelantikan', blank=True, null=True, default="1900-01-01", verbose_name='TMT Pelantikan') # Field name made lowercase.
     berkas = models.ForeignKey('TBerkas', on_delete=models.CASCADE, blank=True, null=True,)
+    status = models.ForeignKey('TStatusBerkas', on_delete=models.CASCADE, null=True, blank=True)
     dokumen = models.FileField(upload_to=_upload_path_jabatan, null=True, blank=True)
 
     class Meta:

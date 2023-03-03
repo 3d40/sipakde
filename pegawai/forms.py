@@ -111,3 +111,22 @@ class FormTUser(ModelForm):
            'user_akses',
            'waktu_login'
         ]
+
+class  FormTRiwayatPendidikan(ModelForm):
+    class Meta :
+        model = TRiwayatPendidikan
+        fields = [
+            'pengguna', 
+            'tingkat_pendidikan', 
+            'pendidikan', 
+            'nama_pendidikan', 
+            'tgl_lulus', 
+            'tahun_lulus', 
+            'nomor_ijazah', 
+            'nama_sekolah', 
+            'gelar_depan', 
+            'gelar_belakang', 
+            'pendidikan_pertama', 
+            'status', 
+            'dokumen'
+        ]

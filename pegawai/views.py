@@ -24,7 +24,7 @@ import json
 from django.views.generic import View
 from django.template.loader import render_to_string
 from .token import AccountActivationTokenGenerator
-
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode    
 from ast import Slice
 from cgitb import enable
 import email
@@ -63,7 +63,6 @@ from django.shortcuts import get_list_or_404, render, get_object_or_404, redirec
 from .models import *
 from django.contrib.sites.shortcuts import get_current_site
 from django.utils.encoding import force_bytes
-from django.utils.http import urlsafe_base64_encode
 from django.template.loader import render_to_string
 from .token import AccountActivationTokenGenerator
 from django.contrib.auth import login
@@ -173,44 +172,103 @@ class Logout(LogoutView):
     template_name = 'register/login.html'
     next_page = 'pegawai:login'
 
+# def RegisterView(request):
+#     if request.method == 'GET':
+#         return render(request, 'register/register.html')
+#     if request.method == 'POST':
+#         form = SignupForm(request.POST)
+#         form1 = OpdForm(request.POST)
+#         # print(form.errors.as_data())
+#         if form.is_valid():
+#             pegawai = TPegawaiSapk.objects.filter(nip_baru=request.POST.get('username')).exists()
+#             if pegawai == True:
+#                 y = get_object_or_404(TOpd, id = request.POST.get('unor_induk_bkd'))
+#                 x = TPegawaiSapk.objects.get(nip_baru = request.POST.get('username'))
+#                 x.unor_induk_bkd = y
+#                 x.save()
+#                 user = form.save(commit=False)
+#                 user.is_active = False
+#                 user.save()
+#                 current_site = get_current_site(request)
+#                 mail_subject = 'Aktifkan akun Anda!'
+#                 message = render_to_string('register/account_activation_email.html', {
+#                     'user': user,
+#                     'domain': current_site.domain,
+#                     'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+#                     'token': default_token_generator.make_token(user),
+#                 })
+#                 to_email = form.cleaned_data.get('email')
+#                 email = EmailMessage(mail_subject, message, to=[to_email])
+#                 email.send()
+#                 return HttpResponse('Silahkan komfirmasi email Anda untuk menyelesaikan proses pendaftaran!')
+#             else:
+#                 return HttpResponse('Data Anda tidak terhubung dengan data kepegawaian Pemerintah Provinsi Jambi!')
+#     else:
+#         form = SignupForm()
+#         form1 = OpdForm()
+#     return render(request, 'register/register.html', {'form': form, 'form1':form1})
+
 class RegisterView(View):
+    form_class = SignupForm
     template_name = 'register/register.html'
+
     def get(self, request):
-        form = SignupForm()
-        form1 = OpdForm()
+        form = self.form_class()
+        form1 = OpdForm
         return render(request, self.template_name, {'form': form, 'form1':form1})
-    
+
     def post(self, request, *args, **kwargs):
-        form = SignupForm(request.POST)
+        form = self.form_class(request.POST)
         form1 = OpdForm(request.POST)
         if form.is_valid():
-            pegawai = TPegawaiSapk.objects.filter(nip_baru=request.POST.get('username')).exists()
-            if pegawai == True:
-                y = get_object_or_404(TOpd, id = request.POST.get('unor_induk_bkd'))
-                x = TPegawaiSapk.objects.get(nip_baru = request.POST.get('username'))
-                x.unor_induk_bkd = y
-                x.save()
-                user = form.save(commit=False)
-                user.is_active = False
-                user.save()
-                current_site = get_current_site(request)
-                mail_subject = 'Aktifkan akun Anda!'
-                message = render_to_string('regitster/account_activation_email.html', {
-                    'user': user,
-                    'domain': current_site.domain,
-                    'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-                    'token': default_token_generator.make_token(user),
-                })
-                to_email = form.cleaned_data.get('email')
-                email = EmailMessage(mail_subject, message, to=[to_email])
-                email.send()
-                return HttpResponse('Silahkan komfirmasi email Anda untuk menyelesaikan proses pendaftaran!')
-            else:
-                return HttpResponse('Data Anda tidak terhubung dengan data kepegawaian Pemerintah Provinsi Jambi!')
+            y = get_object_or_404(TOpd, id = request.POST.get('unor_induk_bkd'))
+            x = TPegawaiSapk.objects.get(nip_baru = request.POST.get('username'))
+            x.unor_induk_bkd = y
+            x.save()
+            user = form.save(commit=False)
+            user.is_active = False # Deactivate account till it is confirmed
+            user.save()
+
+            current_site = get_current_site(request)
+            subject = 'Activate Your MySite Account'
+            message = render_to_string('register/account_activation_email.html', {
+                'user': user,
+                'domain': current_site.domain,
+                'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                'token': account_activation_token.make_token(user),
+            })
+            user.email_user(subject, message)
+
+            return HttpResponse('Silahkan komfirmasi email Anda untuk menyelesaikan proses pendaftaran!')
         else:
-            form = SignupForm()
-            form1 = OpdForm()
-        return render(request, 'register/register.html', {'form': form, 'form1':form1})
+            return HttpResponse('Data Anda tidak terhubung dengan data kepegawaian Pemerintah Provinsi Jambi!')
+
+
+        # return redirect('pegawai:login')
+
+        # return render(request, self.template_name, {'form': form, 'form1':form1})
+
+
+class ActivateAccount(View):
+    def get(self, request, uidb64, token, *args, **kwargs):
+        try:
+            uid = force_text(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+
+        if user is not None and account_activation_token.check_token(user, token):
+            user.is_active = True
+            user.save()
+            TUser.objects.update_or_create(
+                pengguna = user,
+            )
+            login(request, user)
+            messages.success(request, ('Your account have been confirmed.'))
+            return redirect('pegawai:login')
+        else:
+            messages.warning(request, ('The confirmation link was invalid, possibly because it has already been used.'))
+            return redirect('pegawai:login')
 
 class CustomPasswordChangeView(PasswordChangeView):
     template_name = 'register/password_change.html'
@@ -219,25 +277,6 @@ class CustomPasswordChangeView(PasswordChangeView):
     def form_valid(self, form):
         messages.success(self.request, 'Password kamu berhasil diubah')
         return super().form_valid(form)
-
-
-# class GolonganListView(ListView):
-#     model = TRiwayatGolongan
-#     # form_class = FormTRiwayatGolongan
-#     template_name = 'pegawai/rwgolongan_list.html'
-
-#     def get_qeryset(self):
-#         qs = super().get_queryset()
-#         search_term = self.request.GET.get("search", None)
-#         if search_term is not None:
-#             qs = qs.filter(session_name__icontains=search_term)
-#         return qs
-    
-
-    # def get_queryset(self, **kwargs):
-    #     pegawai = get_object_or_404(TPegawaiSapk, nip_baru =self.request.user)
-    #     qs = super().get_queryset(**kwargs)
-    #     return qs.filter(orang_id=pegawai.id)
 
 
 def GolonganListView(request, id):
@@ -254,8 +293,6 @@ def GolonganListView(request, id):
             'objec_list': "Data Tidak Ada"
         }
         return render(request,'pegawai/rwgolongan_list.html',context)
-
-    
 
 
 def JabatanListView(request, id):
@@ -308,28 +345,6 @@ def RiwayatPendidikanList(request, id):
     return render(request,'pegawai/rwpendidikan_list.html')
 
 
-# def RiwayatPendidikanList(request, id):
-#     pegawai = get_object_or_404(TPegawaiSapk, id=id)
-#     pendidikan = TRiwayatPendidikan.objects.filter( pengguna = id)
-#     context = {
-#         'object_list':pendidikan,
-#         'pegawai':pegawai
-#         }
-#     if pendidikan:
-#         try:
-#             context = {
-#                 'object_list':pendidikan,
-#                 'pegawai':pegawai
-#                 }
-#             return render(request,'pegawai/rwpendidikan_list.html',context)
-#         except:       
-#             context={
-#                 'objec_list': "Data Tidak Ada"
-#                 }
-#             return render(request,'pegawai/rwpendidikan_list.html',context)
-#     return render(request,'pegawai/rwpendidikan_list.html', context)
-
-
 
 
 def RiwayatHukdisList(request, id):
@@ -376,28 +391,6 @@ def RiwayatKursusList(request, id):
     return render(request,'pegawai/rwkursus_list.html',context)
 
 
-
-
-
-# class JabatanListView(ListView):
-#     model = TRiwayatJabatan
-#     # form_class = FormTRiwayatGolongan
-#     template_name = 'pegawai/rwjabatan_list.html'
-    
-
-#     def get_queryset(self, **kwargs):
-#         pegawai = get_object_or_404(TPegawaiSapk, nip_baru =self.request.user)
-#         qs = super().get_queryset(**kwargs)
-#         return qs.filter(orang_id=pegawai.id)
-
-# class JabatanEditView(UpdateView):
-#     template_name = 'pegawai/triwayatjabatan_update_form.html'
-#     model = TRiwayatJabatan
-#     form_class = FormTriwayatJabatan
-    
-#     def get_success_url(self):
-#         return reverse("pegawai:rwjabatan")
-
 def JabatanEditView(request, id):                                         
     data = get_object_or_404(TRiwayatJabatan, id=id)
     form = FormTriwayatJabatan(instance=data)
@@ -419,41 +412,14 @@ class JabatanInputView(CreateView):
 
     def get_initial(self):
         super(JabatanInputView, self).get_initial()
-        pegawai = TPegawaiSapk.objects.get(nip_baru=self.request.user)
+        print(self.kwargs)
+        pegawai = get_object_or_404(TPegawaiSapk, id = self.kwargs.get('id'))
         self.initial = {
             "orang":pegawai.id, 
             "unor":pegawai.unor_induk_bkd, 
             "jenis_jabatan":pegawai.jenis_jabatan
             }
         return self.initial
-
-
-
-# def InputPangkatView(request, id):
-#     pengguna = request.session['user']
-#     pns = get_object_or_404(TPegawaiSapk, nip_baru=pengguna)
-#     gol = get_object_or_404(TRiwayatGolongan, id = id)
-#     form=FormTRiwayatGolongan(instance=gol)
-#     print(gol.orang_id.pns_id)
-#     if request.method == 'POST':
-#         gol.save() 
-#         form = FormTRiwayatGolongan(request.POST, request.FILES, instance=gol)
-#         if form.is_valid():
-#             form.save()
-#             return render(request, 'pegawai/pangkatinput.html', {'form': form})
-#         else:
-#             pass
-#     return render(request, 'pegawai/pangkatinput.html', {'form':form})
-
-
-# class PegawaiDetailView(DetailView):
-#     model = TPegawaiSapk
-#     template_name = 'pegawai/profile.html'
-#     context_object_name = 'pegawai'
-
-#     def get_context_data(self, *args,**kwargs):
-#         context = super(PegawaiDetailView,self).get_context_data(*args, **kwargs)    
-#         return context
 
 def PegawaiDetailView(request, id):
     # dictionary for initial data with
@@ -488,37 +454,6 @@ class PangkatEditView(UpdateView):
     
 
 
-    # def get_queryset(self):
-    #     queryset = super(PangkatEditView, self).get_queryset()
-    #     return queryset.get(id=self.id)
-    
-    # def get_initial(self):
-    #     initial = super().get_initial()
-    #     return initial
-        
-    # def form_valid(self, form):
-    #     response = super().form_valid(form)
-    #     form.save()
-    #     return response
-
-    
-
-# class RiwayatSkpList(ListView):
-#     model = TRiwayatDp3
-#     template_name = 'pegawai/rwskp_list.html'
-
-#     def get_queryset(self, **kwargs):
-#         pegawai = get_object_or_404(TPegawaiSapk, nip_baru =self.request.user)
-#         qs = super().get_queryset(**kwargs)
-#         return qs.filter(id_pns=pegawai.id)
-    
-#     def get_context_data(self, **kwargs):
-#         context = super(RiwayatSkpList, self).get_context_data(**kwargs)
-#         context['pegawai'] = get_object_or_404(TPegawaiSapk, nip_baru =self.request.user)
-#         context['judul'] = " Riwayat Sasaran Kinerja Pegawai"
-#         return context
-
-
 class SkpEditView(UpdateView):
     model = TRiwayatDp3
     form_class = FormRiwayatSkp
@@ -531,9 +466,15 @@ class SkpInputView(CreateView):
     
     def get_initial(self):
         super(SkpInputView, self).get_initial()
-        pegawai = TPegawaiSapk.objects.get(nip_baru=self.request.user)
-        user = self.request.user
+        pegawai = get_object_or_404(TPegawaiSapk, id = self.kwargs.get('id'))
         self.initial = {
             "id_pns":pegawai,
             }
         return self.initial
+
+    
+class PendidikanEditView(UpdateView):
+    model = TRiwayatPendidikan
+    form_class = FormTRiwayatPendidikan
+    template_name_suffix = '_update_form'
+    

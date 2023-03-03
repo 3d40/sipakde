@@ -1,0 +1,5 @@
+{% autoescape off %}  
+Hi {{ user.username }},  
+silahkan klick untuk konfirmasi registrasi anda 
+http://{{ domain }}{% url 'pegawai:activate' uidb64=uid token=token %}  
+{% endautoescape %}  

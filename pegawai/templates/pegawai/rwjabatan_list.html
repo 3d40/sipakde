@@ -56,7 +56,7 @@
                         {{forloop.counter}}
                       </td>
                       <td>
-                        <a href="#">{{data.jabatan.nama_jabatan}}</a> 
+                        <a href="{% url 'pegawai:editjabatan' data.id %}">{{data.jabatan.nama_jabatan}}</a> 
                       </td>
                       <td>
                         {{data.jenis_jabatan}}

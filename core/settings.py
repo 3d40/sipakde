@@ -137,3 +137,19 @@ LOGOUT_REDIRECT_URL = '/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'static/upload')
 MEDIA_URL = '/upload/'
+
+DATE_INPUT_FORMATS = ('%d-%m-%Y','%Y-%m-%d')
+
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'data.bkd.jambiprov.go.id'
+# EMAIL_USE_TLS = True
+# EMAIL_PORT = 25
+# EMAIL_HOST_USER = 'info@data.bkd.jambiprov.go.id'
+# EMAIL_HOST_PASSWORD = 'fhnjotauxzmcyauw'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'bkd.intai.data@gmail.com'
+EMAIL_HOST_PASSWORD = 'fhnjotauxzmcyauw'

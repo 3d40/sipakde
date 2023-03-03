@@ -1,6 +1,7 @@
 from django.urls import path
 from .views import *
 from django.conf.urls.static import static
+from .views import RegisterView, ActivateAccount
 
 app_name = 'pegawai'
 urlpatterns = [
@@ -9,6 +10,8 @@ urlpatterns = [
     path('logout/', Logout.as_view(), name='logout'),
     path('register/', RegisterView.as_view(), name='register'),
     path('changepassword/', CustomPasswordChangeView.as_view(), name='password_change'),
+    path('activate/<uidb64>/<token>/', ActivateAccount.as_view(), name='activate'),
+
     #Pegawai
 
     # path('intaian/profile/<str:pk>', PegawaiDetailView.as_view(), name='profile'),
@@ -18,7 +21,9 @@ urlpatterns = [
     # path('intaian/profile/<id>/jabatan', JabatanEditView, name='editjabatan'),
     path('intaian/profile/<str:id>/jabatan/input', JabatanInputView.as_view(), name='inputjabatan'),
     path('intaian/profile/<str:id>/skp', RiwayatSkpList, name='rwskp'),
+    path('intaian/profile/<str:id>/skp/input', SkpInputView.as_view(), name='inputskp'),
     path('intaian/profile/<str:id>/pendidikan', RiwayatPendidikanList, name='rwpendidikan'),
+    path('intaian/profile/<str:id>/pendidikan/edit/', PendidikanEditView.as_view(), name='editpendidikan'),
     path('intaian/profile/<str:id>/hukdis', RiwayatHukdisList, name='rwhukdis'),
     path('intaian/profile/<str:id>/kursus', RiwayatKursusList, name='kursus'),
     
@@ -43,7 +48,7 @@ urlpatterns = [
     # path('intaian/pegawai/skp/', RiwayatSkpList.as_view() , name='rwskp'),
     
     path('intaian/pegawai/edit/skp/<pk>', SkpEditView.as_view(), name='editskp'),
-    path('intaian/pegawai/input/skp/', SkpInputView.as_view(), name='inputskp'),
+    # path('intaian/pegawai/input/skp/', SkpInputView.as_view(), name='inputskp'),
 
     #pendidikan
     
