@@ -1,7 +1,9 @@
 import django_filters
 from .models import *
+from django import forms
 
 class PegawaiFilter (django_filters.FilterSet):
+    umur = forms.DateField( )
     
     class Meta:
         model = TPegawaiSapk

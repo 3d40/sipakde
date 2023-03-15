@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     #daftaraplikasi
     'pegawai',
+    'pensiun',
     'widget_tweaks',
     # 'search_listview',
 ]
@@ -152,4 +153,4 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'bkd.intai.data@gmail.com'
-EMAIL_HOST_PASSWORD = 'fhnjotauxzmcyauw'
+EMAIL_HOST_PASSWORD = 'cpzqdxizatuswiib'

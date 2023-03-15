@@ -85,7 +85,10 @@ from datetime import date
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import os
 from django.urls import reverse,reverse_lazy
+from urllib.request import  urlopen
+import json
 IMAGE_FILE_TYPES = ['png', 'jpg', 'jpeg', 'pdf']
+urlpegawai = 'http://103.114.144.202/nip/?search='
 
 
 
@@ -106,6 +109,14 @@ def PegawaiList(request):
     akun = TUser.objects.get(pengguna =request.user)
     if akun.jenis.id == 1:
         pegawai = TPegawaiSapk.objects.filter(nip_baru=user)
+        data = urlopen(urlpegawai + user)
+        json_pegawai = json.load(data)
+        print(json_pegawai)
+        for x in json_pegawai:
+            opdupdate = TPegawaiSapk.objects.get(nip_baru = user)
+            opdupdate.unor_skp_id =x['company_id']
+            opdupdate.save(update_fields=['unor_skp'])
+
         filterku = PegawaiFilter(request.GET, queryset=pegawai)
         p = Paginator(filterku.qs, 25)
         page = request.GET.get('page')
@@ -142,6 +153,16 @@ def PegawaiList(request):
         return render (request, 'pegawai/tpegawaisapk_list.html',context)
     else:
         pegawai = TPegawaiSapk.objects.all()
+        for data in pegawai:
+            tahun = data.nip_baru[0:4]
+            bulan = data.nip_baru[4:6]
+            tgl = data.nip_baru[6:8]
+            lahir = datetime.strptime(tahun+'-'+bulan+'-'+tgl, "%Y-%m-%d").date()
+            data.tgl_lhr= lahir
+            data.save()
+            umur = relativedelta(datetime.today(), lahir)
+            if umur.years > 58:
+                print(data.nip_baru, data.nama, umur.years)
         filterku = PegawaiFilter(request.GET, queryset=pegawai)
         p = Paginator(filterku.qs, 25)
         page = request.GET.get('page')
@@ -166,47 +187,9 @@ class HomeView(View):
         return render(request, self.template_name)
 
 
-
-
 class Logout(LogoutView):
     template_name = 'register/login.html'
     next_page = 'pegawai:login'
-
-# def RegisterView(request):
-#     if request.method == 'GET':
-#         return render(request, 'register/register.html')
-#     if request.method == 'POST':
-#         form = SignupForm(request.POST)
-#         form1 = OpdForm(request.POST)
-#         # print(form.errors.as_data())
-#         if form.is_valid():
-#             pegawai = TPegawaiSapk.objects.filter(nip_baru=request.POST.get('username')).exists()
-#             if pegawai == True:
-#                 y = get_object_or_404(TOpd, id = request.POST.get('unor_induk_bkd'))
-#                 x = TPegawaiSapk.objects.get(nip_baru = request.POST.get('username'))
-#                 x.unor_induk_bkd = y
-#                 x.save()
-#                 user = form.save(commit=False)
-#                 user.is_active = False
-#                 user.save()
-#                 current_site = get_current_site(request)
-#                 mail_subject = 'Aktifkan akun Anda!'
-#                 message = render_to_string('register/account_activation_email.html', {
-#                     'user': user,
-#                     'domain': current_site.domain,
-#                     'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-#                     'token': default_token_generator.make_token(user),
-#                 })
-#                 to_email = form.cleaned_data.get('email')
-#                 email = EmailMessage(mail_subject, message, to=[to_email])
-#                 email.send()
-#                 return HttpResponse('Silahkan komfirmasi email Anda untuk menyelesaikan proses pendaftaran!')
-#             else:
-#                 return HttpResponse('Data Anda tidak terhubung dengan data kepegawaian Pemerintah Provinsi Jambi!')
-#     else:
-#         form = SignupForm()
-#         form1 = OpdForm()
-#     return render(request, 'register/register.html', {'form': form, 'form1':form1})
 
 class RegisterView(View):
     form_class = SignupForm
@@ -214,34 +197,36 @@ class RegisterView(View):
 
     def get(self, request):
         form = self.form_class()
-        form1 = OpdForm
-        return render(request, self.template_name, {'form': form, 'form1':form1})
+        # form1 = OpdForm
+        return render(request, self.template_name, {'form': form})
 
     def post(self, request, *args, **kwargs):
         form = self.form_class(request.POST)
-        form1 = OpdForm(request.POST)
+        # form1 = OpdForm(request.POST)
         if form.is_valid():
-            y = get_object_or_404(TOpd, id = request.POST.get('unor_induk_bkd'))
-            x = TPegawaiSapk.objects.get(nip_baru = request.POST.get('username'))
-            x.unor_induk_bkd = y
-            x.save()
-            user = form.save(commit=False)
-            user.is_active = False # Deactivate account till it is confirmed
-            user.save()
-
-            current_site = get_current_site(request)
-            subject = 'Activate Your MySite Account'
-            message = render_to_string('register/account_activation_email.html', {
-                'user': user,
-                'domain': current_site.domain,
-                'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-                'token': account_activation_token.make_token(user),
-            })
-            user.email_user(subject, message)
-
-            return HttpResponse('Silahkan komfirmasi email Anda untuk menyelesaikan proses pendaftaran!')
+            cekpegawai = TPegawaiSapk.objects.filter(nip_baru = request.POST.get('username')).exists()
+            print(cekpegawai)
+            if cekpegawai:
+                x = TPegawaiSapk.objects.get(nip_baru = request.POST.get('username'))
+                user = form.save(commit=False)
+                user.is_active = False # Deactivate account till it is confirmed
+                user.save()
+                current_site = get_current_site(request)
+                subject = 'Activate Your MySite Account'
+                message = render_to_string('register/account_activation_email.html', {
+                    'user': user,
+                    'domain': current_site.domain,
+                    'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                    'token': account_activation_token.make_token(user),
+                    })
+                user.email_user(subject, message)
+                return HttpResponse('Silahkan komfirmasi email Anda untuk menyelesaikan proses pendaftaran!')
+            else:
+                return HttpResponse('Data Anda tidak terhubung dengan data kepegawaian Pemerintah Provinsi Jambi!')
         else:
-            return HttpResponse('Data Anda tidak terhubung dengan data kepegawaian Pemerintah Provinsi Jambi!')
+            return render(request, self.template_name)
+
+           
 
 
         # return redirect('pegawai:login')
@@ -426,6 +411,7 @@ def PegawaiDetailView(request, id):
     # field names as keys
     context ={}
     pegawai = TPegawaiSapk.objects.get(id =id)
+    print(pegawai.unor_skp)
     # add the dictionary during initialization
     context= {
         'pegawai' : pegawai
@@ -448,8 +434,8 @@ class PangkatEditView(UpdateView):
     
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
-        self.object.status = '1'
-        self.object.save()
+        self.object.status = 1
+        self.object.save(update_fields=['status'])
         return super(PangkatEditView, self).post(request, *args, **kwargs)
     
 
@@ -473,8 +459,97 @@ class SkpInputView(CreateView):
         return self.initial
 
     
-class PendidikanEditView(UpdateView):
-    model = TRiwayatPendidikan
-    form_class = FormTRiwayatPendidikan
-    template_name_suffix = '_update_form'
-    
+# class PendidikanEditView(UpdateView):
+#     model = TRiwayatPendidikan
+#     form_class = FormTRiwayatPendidikan
+#     template_name_suffix = '_update_form'
+
+
+def PendidikanEditView(request, id):                                         
+    data = get_object_or_404(TRiwayatPendidikan, id=id)
+    form = FormTRiwayatPendidikan(instance=data)                                                               
+
+    if request.method == "POST":
+        form = FormTRiwayatPendidikan(request.POST, instance=data)
+        if form.is_valid():
+            form.save()
+            return redirect ('pegawai:rwpendidikan')
+    context = {
+        "form":form,
+        "object_list":data
+    }
+    return render(request, 'pegawai/triwayatpendidikan_update_form.html', context)
+
+
+# def PensiunList(request):
+#     user = request.user.username
+#     akun = TUser.objects.get(pengguna =request.user)
+#     if akun.jenis.id == 1:
+#         pegawai = TPegawaiSapk.objects.filter(nip_baru=user)
+#         data = urlopen(urlpegawai + user)
+#         json_pegawai = json.load(data)
+#         print(json_pegawai)
+#         for x in json_pegawai:
+#             opdupdate = TPegawaiSapk.objects.get(nip_baru = user)
+#             opdupdate.unor_skp_id =x['company_id']
+#             opdupdate.save(update_fields=['unor_skp'])
+
+#         filterku = PegawaiFilter(request.GET, queryset=pegawai)
+#         p = Paginator(filterku.qs, 25)
+#         page = request.GET.get('page')
+        
+#         try:
+#             response = p.page(page)
+#         except PageNotAnInteger:
+#             response = p.page(1)
+#         except EmptyPage:from django.utils.http import urlsafe_base64_encode
+#         response = p.page(p.num_pages)
+#         context = {
+#             'filterku': filterku,
+#             'object_list': pegawai,
+#             'filter':response
+#             }
+#         return render (request, 'pegawai/tpegawaisapk_list.html',context)
+#     elif akun.jenis.id == 2:
+#         pegawai = TPegawaiSapk.objects.filter(unor_induk_bkd = akun.user_akses)
+#         filterku = PegawaiFilter(request.GET, queryset=pegawai)
+#         p = Paginator(filterku.qs, 25)
+#         page = request.GET.get('page')
+        
+#         try:
+#             response = p.page(page)
+#         except PageNotAnInteger:
+#             response = p.page(1)
+#         except EmptyPage:
+#             response = p.page(p.num_pages)
+#         context = {
+#             'filterku': filterku,
+#             'object_list': pegawai,
+#             'filter':response
+#             }
+#         return render (request, 'pegawai/tpegawaisapk_list.html',context)
+#     else:
+#         pegawai = TPegawaiSapk.objects.all()
+#         for data in pegawai:
+#             tahun = data.nip_baru[0:4]
+#             bulan = data.nip_baru[4:6]
+#             tgl = data.nip_baru[6:8]
+#             lahir = datetime.strptime(tahun+'-'+bulan+'-'+tgl, "%Y-%m-%d").date()
+#             data.tgl_lhr= lahir
+#             data.save()
+#         filterku = PegawaiFilter(request.GET, queryset=pegawai)
+#         p = Paginator(filterku.qs, 25)
+#         page = request.GET.get('page')
+        
+#         try:
+#             response = p.page(page)
+#         except PageNotAnInteger:
+#             response = p.page(1)
+#         except EmptyPage:
+#             response = p.page(p.num_pages)
+#         context = {
+#             'filterku': filterku,
+#             'object_list': pegawai,
+#             'filter':response
+#             }
+#         return render (request, 'pegawai/tpegawaisapk_list.html', context)

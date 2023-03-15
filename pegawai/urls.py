@@ -23,7 +23,7 @@ urlpatterns = [
     path('intaian/profile/<str:id>/skp', RiwayatSkpList, name='rwskp'),
     path('intaian/profile/<str:id>/skp/input', SkpInputView.as_view(), name='inputskp'),
     path('intaian/profile/<str:id>/pendidikan', RiwayatPendidikanList, name='rwpendidikan'),
-    path('intaian/profile/<str:id>/pendidikan/edit/', PendidikanEditView.as_view(), name='editpendidikan'),
+    path('intaian/profile/<str:id>/pendidikan/edit', PendidikanEditView, name='editpendidikan'),
     path('intaian/profile/<str:id>/hukdis', RiwayatHukdisList, name='rwhukdis'),
     path('intaian/profile/<str:id>/kursus', RiwayatKursusList, name='kursus'),
     
