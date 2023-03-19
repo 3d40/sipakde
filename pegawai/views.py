@@ -81,7 +81,7 @@ from django.template.loader import render_to_string
 from .token import account_activation_token
 from django.core.mail import EmailMessage
 from django.contrib.auth.models import User
-from datetime import date
+from datetime import date, timedelta
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import os
 from django.urls import reverse,reverse_lazy
@@ -116,6 +116,7 @@ def PegawaiList(request):
             opdupdate = TPegawaiSapk.objects.get(nip_baru = user)
             opdupdate.unor_skp_id =x['company_id']
             opdupdate.save(update_fields=['unor_skp'])
+
 
         filterku = PegawaiFilter(request.GET, queryset=pegawai)
         p = Paginator(filterku.qs, 25)
@@ -153,16 +154,21 @@ def PegawaiList(request):
         return render (request, 'pegawai/tpegawaisapk_list.html',context)
     else:
         pegawai = TPegawaiSapk.objects.all()
-        for data in pegawai:
-            tahun = data.nip_baru[0:4]
-            bulan = data.nip_baru[4:6]
-            tgl = data.nip_baru[6:8]
-            lahir = datetime.strptime(tahun+'-'+bulan+'-'+tgl, "%Y-%m-%d").date()
-            data.tgl_lhr= lahir
-            data.save()
-            umur = relativedelta(datetime.today(), lahir)
-            if umur.years > 58:
-                print(data.nip_baru, data.nama, umur.years)
+        # for data in pegawai:
+        #     tahun = data.nip_baru[0:4]
+        #     bulan = data.nip_baru[4:6]
+        #     tgl = data.nip_baru[6:8]
+        #     lahir = datetime.strptime(tahun+'-'+bulan+'-'+tgl, "%Y-%m-%d").date()
+        #     data.tgl_lhr= lahir
+        #     data.save()
+        #     umur = relativedelta(datetime.today(), lahir)
+        #     try:
+        #         pensiun = lahir + relativedelta(years=data.jabatan.bup)
+        #         print(pensiun)
+        #         data.tmt_pensiun = pensiun
+        #         data.save()
+        #     except:
+        #         pass
         filterku = PegawaiFilter(request.GET, queryset=pegawai)
         p = Paginator(filterku.qs, 25)
         page = request.GET.get('page')
@@ -481,41 +487,42 @@ def PendidikanEditView(request, id):
     return render(request, 'pegawai/triwayatpendidikan_update_form.html', context)
 
 
-# def PensiunList(request):
+# def PensiunListView(request):
 #     user = request.user.username
-#     akun = TUser.objects.get(pengguna =request.user)
+#     akun = TUser.objects.get(pengguna=request.user)
 #     if akun.jenis.id == 1:
 #         pegawai = TPegawaiSapk.objects.filter(nip_baru=user)
 #         data = urlopen(urlpegawai + user)
 #         json_pegawai = json.load(data)
 #         print(json_pegawai)
 #         for x in json_pegawai:
-#             opdupdate = TPegawaiSapk.objects.get(nip_baru = user)
-#             opdupdate.unor_skp_id =x['company_id']
+#             opdupdate = TPegawaiSapk.objects.get(nip_baru=user)
+#             opdupdate.unor_skp_id = x['company_id']
 #             opdupdate.save(update_fields=['unor_skp'])
-
+#
 #         filterku = PegawaiFilter(request.GET, queryset=pegawai)
 #         p = Paginator(filterku.qs, 25)
 #         page = request.GET.get('page')
-        
+#
 #         try:
 #             response = p.page(page)
 #         except PageNotAnInteger:
 #             response = p.page(1)
-#         except EmptyPage:from django.utils.http import urlsafe_base64_encode
+#         except EmptyPage:
+#             from django.utils.http import urlsafe_base64_encode
 #         response = p.page(p.num_pages)
 #         context = {
 #             'filterku': filterku,
 #             'object_list': pegawai,
-#             'filter':response
-#             }
-#         return render (request, 'pegawai/tpegawaisapk_list.html',context)
+#             'filter': response
+#         }
+#         return render(request, 'pegawai/tpegawaisapk_pensiun_list.html', context)
 #     elif akun.jenis.id == 2:
-#         pegawai = TPegawaiSapk.objects.filter(unor_induk_bkd = akun.user_akses)
+#         pegawai = TPegawaiSapk.objects.filter(unor_induk_bkd=akun.user_akses)
 #         filterku = PegawaiFilter(request.GET, queryset=pegawai)
 #         p = Paginator(filterku.qs, 25)
 #         page = request.GET.get('page')
-        
+#
 #         try:
 #             response = p.page(page)
 #         except PageNotAnInteger:
@@ -525,22 +532,30 @@ def PendidikanEditView(request, id):
 #         context = {
 #             'filterku': filterku,
 #             'object_list': pegawai,
-#             'filter':response
-#             }
-#         return render (request, 'pegawai/tpegawaisapk_list.html',context)
+#             'filter': response
+#         }
+#         return render(request, 'pegawai/tpegawaisapk_pensiun_list.html', context)
 #     else:
 #         pegawai = TPegawaiSapk.objects.all()
 #         for data in pegawai:
 #             tahun = data.nip_baru[0:4]
 #             bulan = data.nip_baru[4:6]
 #             tgl = data.nip_baru[6:8]
-#             lahir = datetime.strptime(tahun+'-'+bulan+'-'+tgl, "%Y-%m-%d").date()
-#             data.tgl_lhr= lahir
+#             lahir = datetime.strptime(tahun + '-' + bulan + '-' + tgl, "%Y-%m-%d").date()
+#             data.tgl_lhr = lahir
 #             data.save()
+#             umur = relativedelta(datetime.today(), lahir)
+#             try:
+#                 pensiun = lahir + relativedelta(years=data.jabatan.bup)
+#                 print(pensiun)
+#                 data.tmt_pensiun = pensiun
+#                 data.save()
+#             except:
+#                 pass
 #         filterku = PegawaiFilter(request.GET, queryset=pegawai)
 #         p = Paginator(filterku.qs, 25)
 #         page = request.GET.get('page')
-        
+#
 #         try:
 #             response = p.page(page)
 #         except PageNotAnInteger:
@@ -550,6 +565,18 @@ def PendidikanEditView(request, id):
 #         context = {
 #             'filterku': filterku,
 #             'object_list': pegawai,
-#             'filter':response
-#             }
-#         return render (request, 'pegawai/tpegawaisapk_list.html', context)
+#             'filter': response
+#         }
+#         return render(request, 'pegawai/tpegawaisapk_pensiun_list.html', context)
+def PensiunListView(request):
+    if request.method == "POST":
+        start_date = request.POST.get('start_date')
+        end_date = request.POST.get('end_date')
+        hasil = TPegawaiSapk.objects.raw('select id, tmt_pensiun from t_pegawai_sapk where tmt_pensiun between "'+start_date+'" and "'+end_date+'"')
+        context = {
+            'object_list':hasil
+        }
+        return render(request, 'pegawai/tpegawaisapk_pensiun_list.html', context)
+    else:
+        object_list =TPegawaiSapk.objects.all()
+        return render(request, 'pegawai/tpegawaisapk_pensiun_list.html',{'object_list':object_list})

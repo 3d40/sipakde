@@ -131,6 +131,8 @@ class  FormTRiwayatPendidikan(ModelForm):
             'dokumen'
         ]
 
-class RangTanggal(forms.Form):
-    start_date = forms.DateField()
-    end_date = forms.DateField()
+class RangTanggalForm(forms.Form):
+    start_date = forms.DateField(label='Begin:', widget=forms.SelectDateWidget(years=list(range(2007, 2023))))
+    end_date = forms.DateField(label='End:', initial=datetime.now,widget=forms.SelectDateWidget(years=list(range(2007, 2023))))
+    class Meta :
+        fields = ['tmt_pensiun']

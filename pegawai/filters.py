@@ -1,10 +1,9 @@
 import django_filters
+from django_filters import DateRangeFilter,DateFilter
 from .models import *
 from django import forms
 
 class PegawaiFilter (django_filters.FilterSet):
-    umur = forms.DateField( )
-    
     class Meta:
         model = TPegawaiSapk
         fields = { 
@@ -24,3 +23,13 @@ class PegawaiFilter (django_filters.FilterSet):
             # 'pendidikan':['exact'], 
             'unor_induk_bkd':['exact'],
         }
+
+
+class PensiunFilter(django_filters.FilterSet):
+    start_date = DateFilter(name='tmt_pensiun',lookup_type=('gt'),)
+    end_date = DateFilter(name='tmt_pensiun',lookup_type=('lt'))
+    date_range = DateRangeFilter(name='tmt_pensiun')
+
+    class Meta:
+        model = TPegawaiSapk
+        fields = ['tmt_pensiun',]

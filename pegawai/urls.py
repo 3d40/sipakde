@@ -26,6 +26,7 @@ urlpatterns = [
     path('intaian/profile/<str:id>/pendidikan/edit', PendidikanEditView, name='editpendidikan'),
     path('intaian/profile/<str:id>/hukdis', RiwayatHukdisList, name='rwhukdis'),
     path('intaian/profile/<str:id>/kursus', RiwayatKursusList, name='kursus'),
+    path('intaian/pegawailist/pensiun', PensiunListView, name='pensiun'),
     
     
     
