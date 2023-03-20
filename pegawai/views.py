@@ -87,6 +87,7 @@ import os
 from django.urls import reverse,reverse_lazy
 from urllib.request import  urlopen
 import json
+import uuid
 IMAGE_FILE_TYPES = ['png', 'jpg', 'jpeg', 'pdf']
 urlpegawai = 'http://103.114.144.202/nip/?search='
 
@@ -116,8 +117,12 @@ def PegawaiList(request):
             opdupdate = TPegawaiSapk.objects.get(nip_baru = user)
             opdupdate.unor_skp_id =x['company_id']
             opdupdate.save(update_fields=['unor_skp'])
-
-
+        for data in pegawai :
+            rjabatan = TRiwayatJabatan.objects.filter(orang =data.id).order_by('-tmt_jabatan').first()
+            data.jabatan = rjabatan.jabatan
+            pensiun = data.tgl_lhr + relativedelta(years=data.jabatan.bup)
+            data.tmt_pensiun = pensiun
+            data.save()         
         filterku = PegawaiFilter(request.GET, queryset=pegawai)
         p = Paginator(filterku.qs, 25)
         page = request.GET.get('page')
@@ -137,6 +142,12 @@ def PegawaiList(request):
     elif akun.jenis.id == 2:
         pegawai = TPegawaiSapk.objects.filter(unor_induk_bkd = akun.user_akses)
         filterku = PegawaiFilter(request.GET, queryset=pegawai)
+        for data in pegawai:
+            rjabatan = TRiwayatJabatan.objects.filter(orang =data.id).order_by('-tmt_jabatan').first()
+            data.jabatan = rjabatan.jabatan
+            pensiun = data.tgl_lhr + relativedelta(years=data.jabatan.bup)
+            data.tmt_pensiun = pensiun
+            data.save()   
         p = Paginator(filterku.qs, 25)
         page = request.GET.get('page')
         
@@ -154,21 +165,23 @@ def PegawaiList(request):
         return render (request, 'pegawai/tpegawaisapk_list.html',context)
     else:
         pegawai = TPegawaiSapk.objects.all()
-        # for data in pegawai:
-        #     tahun = data.nip_baru[0:4]
-        #     bulan = data.nip_baru[4:6]
-        #     tgl = data.nip_baru[6:8]
-        #     lahir = datetime.strptime(tahun+'-'+bulan+'-'+tgl, "%Y-%m-%d").date()
-        #     data.tgl_lhr= lahir
-        #     data.save()
-        #     umur = relativedelta(datetime.today(), lahir)
-        #     try:
-        #         pensiun = lahir + relativedelta(years=data.jabatan.bup)
-        #         print(pensiun)
-        #         data.tmt_pensiun = pensiun
-        #         data.save()
-        #     except:
-        #         pass
+        for data in pegawai:
+            tahun = data.nip_baru[0:4]
+            bulan = data.nip_baru[4:6]
+            tgl = data.nip_baru[6:8]
+            lahir = datetime.strptime(tahun+'-'+bulan+'-'+tgl, "%Y-%m-%d").date()
+            data.tgl_lhr= lahir
+            data.save()
+            umur = relativedelta(datetime.today(), lahir)
+            try:
+                rjabatan = TRiwayatJabatan.objects.filter(orang = data.id).order_by('-tmt_jabatan').first()
+                pensiun = lahir + relativedelta(years=data.jabatan.bup)
+                jabatan = get_object_or_404(TJabatan, id = rjabatan.jabatan_id)
+                data.jabatan = jabatan
+                data.tmt_pensiun = pensiun
+                data.save()
+            except :
+                pass
         filterku = PegawaiFilter(request.GET, queryset=pegawai)
         p = Paginator(filterku.qs, 25)
         page = request.GET.get('page')
@@ -288,7 +301,8 @@ def GolonganListView(request, id):
 
 def JabatanListView(request, id):
     pegawai = get_object_or_404(TPegawaiSapk, id =id)
-    jabatan = get_list_or_404(TRiwayatJabatan, orang = id)
+    jabatan = TRiwayatJabatan.objects.filter(orang = id).order_by('-tmt_jabatan')
+
     context = {
         'object_list':jabatan,
         'pegawai':pegawai
@@ -389,7 +403,7 @@ def JabatanEditView(request, id):
         form = FormTriwayatJabatan(request.POST, instance=data)
         if form.is_valid():
             form.save()
-            return redirect ('pegawai:rwjabatan')
+            return redirect ('pegawai:rwjabatan', id = data.orang_id)
     context = {
         "form":form
         }
@@ -403,21 +417,34 @@ class JabatanInputView(CreateView):
 
     def get_initial(self):
         super(JabatanInputView, self).get_initial()
-        print(self.kwargs)
         pegawai = get_object_or_404(TPegawaiSapk, id = self.kwargs.get('id'))
+        buatid = uuid.uuid4()
         self.initial = {
+            'id' : buatid.hex,
             "orang":pegawai.id, 
             "unor":pegawai.unor_induk_bkd, 
             "jenis_jabatan":pegawai.jenis_jabatan
             }
+        print(buatid.hex)
         return self.initial
+    
+    # def post(self, request, *args, **kwargs):
+    #     form_class = self.get_form_class()
+    #     form = self.get_form(form_class)
+    #     if form.is_valid():
+    #         return self.form_valid(form)
+    #     else:
+    #         return self.form_invalid(form)
 
 def PegawaiDetailView(request, id):
     # dictionary for initial data with
     # field names as keys
     context ={}
     pegawai = TPegawaiSapk.objects.get(id =id)
-    print(pegawai.unor_skp)
+    jabatan = TRiwayatJabatan.objects.filter(orang = id).order_by('-tmt_jabatan')[0]
+    pensiun = pegawai.tgl_lhr + relativedelta(years=pegawai.jabatan.bup)
+    pegawai.tmt_pensiun = pensiun
+    pegawai.save()
     # add the dictionary during initialization
     context= {
         'pegawai' : pegawai
@@ -570,13 +597,15 @@ def PendidikanEditView(request, id):
 #         return render(request, 'pegawai/tpegawaisapk_pensiun_list.html', context)
 def PensiunListView(request):
     if request.method == "POST":
+        opd = request.POST.get('opd')
         start_date = request.POST.get('start_date')
         end_date = request.POST.get('end_date')
         hasil = TPegawaiSapk.objects.raw('select id, tmt_pensiun from t_pegawai_sapk where tmt_pensiun between "'+start_date+'" and "'+end_date+'"')
         context = {
-            'object_list':hasil
+            'object_list':hasil,
         }
         return render(request, 'pegawai/tpegawaisapk_pensiun_list.html', context)
     else:
         object_list =TPegawaiSapk.objects.all()
+       
         return render(request, 'pegawai/tpegawaisapk_pensiun_list.html',{'object_list':object_list})

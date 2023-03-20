@@ -4,6 +4,7 @@ from django.core.validators import FileExtensionValidator
 from datetime import datetime
 from django.utils import timezone
 from django.urls import reverse
+import uuid
 
 
 
@@ -307,7 +308,7 @@ def _upload_path_jabatan(instance,filename):
 
 
 class TRiwayatJabatan(models.Model):
-    id = models.CharField(db_column='ID', primary_key=True, max_length=32, editable=False)  # Field name made lowercase.
+    id = models.CharField(primary_key=True, max_length=255)  # Field name made lowercase.
     # nip = models.CharField(db_column='NIP', max_length=18)  # Field name made lowercase.
     orang = models.ForeignKey('TPegawaiSapk', blank = True, null=True, on_delete = models.CASCADE, db_column='id_pns', verbose_name='Nama')  # Field name made lowercase.
     # nama = models.CharField(db_column='Nama', max_length=40)  # Field name made lowercase.

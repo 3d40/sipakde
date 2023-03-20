@@ -56,10 +56,12 @@ class FormTriwayatJabatan(ModelForm):
     def __init__(self, *args, **kwargs):
         super(FormTriwayatJabatan, self).__init__(*args, **kwargs)
         self.fields['orang'].disabled = True
-
+        self.fields['id'].disabled = True
+        self.fields['id'].hidden = True
     class Meta :
         model = TRiwayatJabatan
-        fields =('orang','unor', 'jenis_jabatan','eselon', 'tmt_jabatan', 'nomor_sk', 'tanggal_sk', 'tmt_pelantikan', 'dokumen')
+        fields =('id',
+                 'orang','unor', 'jenis_jabatan','jabatan','eselon', 'tmt_jabatan', 'nomor_sk', 'tanggal_sk', 'tmt_pelantikan', 'dokumen')
     
     
 
